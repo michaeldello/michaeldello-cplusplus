@@ -1,4 +1,4 @@
-# michaeldello-cpluscplus
+# michaeldello-cplusplus
 
 Working examples demonstrating design principles and pattern based solutions using modern C++
 
