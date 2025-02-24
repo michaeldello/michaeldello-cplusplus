@@ -1,0 +1,20 @@
+{
+    "name": "Ubuntu Dev Container",
+    "build": {
+        "dockerfile": "../Dockerfile"
+    },
+    "runArgs": ["--rm"], 
+    "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+    },
+    "extensions": [
+        "ms-vscode.cpptools", 
+        "ms-vscode.cmake-tools", 
+        "twxs.cmake"
+    ],
+    "mounts": [
+        "source=${localWorkspaceFolder},target=/workspace,type=bind"
+    ],
+    "remoteUser": "dev",
+    "containerName": "cpp_dev_container"
+}

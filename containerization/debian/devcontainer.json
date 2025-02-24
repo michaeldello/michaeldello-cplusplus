@@ -1,0 +1,21 @@
+{
+    "name": "C++ Dev",
+    "dockerFile": "../Dockerfile",
+    "containerName": "cpp_dev_container",
+    "workspaceFolder": "/app",
+    "mounts": [
+        "source=${localWorkspaceFolder},target=/app,type=bind"
+    ],
+    "settings": {
+        "terminal.integrated.defaultProfile.linux": "/bin/bash"
+    },
+    "extensions": [
+        "ms-vscode.cpptools",
+        "twxs.cmake",
+        "llvm-vs-code-extensions.vscode-clangd"
+    ],
+    "remoteUser": "root",
+    "runArgs": [
+        "--rm"
+    ]
+}
