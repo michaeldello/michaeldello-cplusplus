@@ -325,4 +325,5 @@ namespace RobotAdapter
     {
         return _newRobotArm.moveXYZ({0,0,0});
     }
-}
+
+} // namespace RobotAdapter

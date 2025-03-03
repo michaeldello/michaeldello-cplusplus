@@ -71,19 +71,3 @@ TEST_CASE("Test printMenu()", "[printMenu]")
             "Select A C++ Example to Run (0 to Quit)") != std::string::npos);
     REQUIRE(output.find("Enter your selection:") != std::string::npos);
 }
-
-//-----------------------------------------------------------------------------
-// Echo Selection Unit Test
-//-----------------------------------------------------------------------------
-
-// Static for internal linkage
-static const char* TEST_FUNCTION_NAME = "testfunctionname";
-
-TEST_CASE("Test echoSelection()", "[echoSelection]")
-{
-    std::string output = 
-        captureStdout(
-            mainhelp::echoSelection, mainhelp::SELECTION_QUIT, TEST_FUNCTION_NAME);
-    REQUIRE(output.find("0") != std::string::npos);
-    REQUIRE(output.find(TEST_FUNCTION_NAME) != std::string::npos);
-}

@@ -41,7 +41,7 @@ namespace RobotAdapter
         virtual bool left(int mm) = 0;
         virtual bool right(int mm) = 0;
         virtual bool zero() = 0;
-        virtual ~RobotArmInterface()=default;
+        virtual ~RobotArmInterface() = default;
     };
 
     //-------------------------------------------------------------------------
@@ -119,6 +119,6 @@ namespace RobotAdapter
         bool zero() override;
     };
 
-}
+} // namespace RobotAdapter
 
 #endif // ADAPTERPATTERN_H

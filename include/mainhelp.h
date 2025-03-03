@@ -1,7 +1,13 @@
 #ifndef MAINHELP_H
 #define MAINHELP_H
+//-----------------------------------------------------------------------------
+//
+// This helper module decouples the User interface from the main() loop.
+//
+//-----------------------------------------------------------------------------
 
-namespace mainhelp {
+namespace mainhelp
+{
 
     //-------------------------------------------------------------------------
     // Constants
@@ -10,7 +16,8 @@ namespace mainhelp {
     enum eSelections
     {
         SELECTION_QUIT = 0,
-        SELECTION_ADAPTER
+        SELECTION_ADAPTER,
+        SELECTION_FACADE
     };
 
     //-------------------------------------------------------------------------
@@ -19,15 +26,11 @@ namespace mainhelp {
     void printMenu();
 
     //-------------------------------------------------------------------------
-    void echoSelection(eSelections selection, const char* function_name);
-
-    //-------------------------------------------------------------------------
-    // Functions to map to valid choices
-    //-------------------------------------------------------------------------
-    //
+    // Functions mapping to valid choices
     //-------------------------------------------------------------------------
     void adapter();
-    //
+    //-------------------------------------------------------------------------
+    void facade();
     //-------------------------------------------------------------------------
     void quit();
 

@@ -43,10 +43,11 @@ int main()
     const std::unordered_map<int, std::function<void()>> menuActions
     {
         {mainhelp::SELECTION_QUIT, mainhelp::quit},
-        {mainhelp::SELECTION_ADAPTER, mainhelp::adapter}
+        {mainhelp::SELECTION_ADAPTER, mainhelp::adapter},
+        {mainhelp::SELECTION_FACADE, mainhelp::facade}
     };
 
-    int choice = 0;
+    auto choice = 0;
     
     while (true)
     {

@@ -17,8 +17,8 @@
     Catch::Session session; // Create Catch2 session
     return session.run(argc, argv);
 } */
+
 #include <iostream>
-#include <sstream>
 #include "adapterpattern.h"
 
 //-----------------------------------------------------------------------------

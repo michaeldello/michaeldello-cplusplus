@@ -90,3 +90,13 @@ Inside the container, after building the code, run the unit tests:
 Directing this to a file to make it available for archiving is advisable
 
     cd build && ctest --verbose > unit_test_results.txt
+
+Debugging Unit Tests requires building with debug symbols in CMakeLists.txt
+
+    set(CMAKE_BUILD_TYPE Debug)
+    set(CMAKE_CXX_FLAGS_DEBUG "-g")
+
+... then building for Debug
+
+    cmake -B build -DCMAKE_BUILD_TYPE=Debug
+    cmake --build build
