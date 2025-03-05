@@ -100,3 +100,9 @@ Debugging Unit Tests requires building with debug symbols in CMakeLists.txt
 
     cmake -B build -DCMAKE_BUILD_TYPE=Debug
     cmake --build build
+
+# Static Code Analysis
+
+Install cppcheck and cpplint (Debian Container)
+
+    apt update && apt install -y cppcheck cpplint

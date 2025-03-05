@@ -1,3 +1,8 @@
+// Copyright (c) 2025 Michael Dello
+//
+// This software is provided under the MIT License.
+// See LICENSE file for details.
+
 //-----------------------------------------------------------------------------
 // Adapter Pattern Unit Tests
 //-----------------------------------------------------------------------------
@@ -25,7 +30,7 @@
 // Test Variables
 //-----------------------------------------------------------------------------
 
-static RobotAdapter::NewRobotArmAdapter newRobotArmAdapter;
+static RobotAdapter::NewRobotArmAdapter newRobotArmAdapter{};
 
 //-----------------------------------------------------------------------------
 // Zero Unit Test

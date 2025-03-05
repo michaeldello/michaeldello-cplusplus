@@ -1,24 +1,29 @@
-#ifndef ADAPTERPATTERN_H
-#define ADAPTERPATTERN_H
+// Copyright (c) 2025 Michael Dello
+//
+// This software is provided under the MIT License.
+// See LICENSE file for details.
+
+#ifndef INCLUDE_ADAPTERPATTERN_H_
+#define INCLUDE_ADAPTERPATTERN_H_
 //-----------------------------------------------------------------------------
 //
-// This header provides the types and class declarations to implement the 
+// This header provides the types and class declarations to implement the
 // Adapter Design Pattern.
 //
 // In this example, the client uses the RobotArmInterface to control robot arms.
-// An existing robot arm class, ExistingRobotArm, implements this interface. 
-// However, a new robot arm's control software is developed separately in the 
+// An existing robot arm class, ExistingRobotArm, implements this interface.
+// However, a new robot arm's control software is developed separately in the
 // NewRobotArm class, and does not conform to the
-// RobotArmInterface the client uses for controlling robot arms, instead 
+// RobotArmInterface the client uses for controlling robot arms, instead
 // implementing a different set of methods.
 //
-// An adapter class called NewRobotArmAdapter adapts the RobotArmInterface to 
-// the new robot's control interface using composition, allowing the client to 
+// An adapter class called NewRobotArmAdapter adapts the RobotArmInterface to
+// the new robot's control interface using composition, allowing the client to
 // use the new robot arm in the same way it controls existing robot arms.
 //
 // This design pattern implementation allows existing implementations to remain
 // untouched, reducing the risk of breakage and improving maintainability.
-// 
+//
 //-----------------------------------------------------------------------------
 
 #include <array>
@@ -53,10 +58,7 @@ namespace RobotAdapter
         int _currentZ;
         void _reportMove(int mm, const std::string &axis) const;
         void _reportOutOfRange() const;
-
-
     public:
-
         static constexpr int MAX_MM{1000};
 
         // Constructor initializes random startup position
@@ -90,12 +92,12 @@ namespace RobotAdapter
         static constexpr tPosition MAX_XYZ{MAX_XY_MM, MAX_XY_MM, MAX_Z_MM};
 
         // Constructor to initialize startup position
-        NewRobotArm(tPosition xyz = HOME );
+        explicit NewRobotArm(tPosition xyz = HOME );
 
         // Move the arm according to the XYZ position given in millimeters
         bool moveXYZ(tPosition XYZmm);
 
-        // Return a copy of the position since it is small, and will not grow in 
+        // Return a copy of the position since it is small, and will not grow in
         // the future
         tPosition getCurrentXYZ() const;
 
@@ -121,4 +123,4 @@ namespace RobotAdapter
 
 } // namespace RobotAdapter
 
-#endif // ADAPTERPATTERN_H
+#endif // INCLUDE_ADAPTERPATTERN_H_

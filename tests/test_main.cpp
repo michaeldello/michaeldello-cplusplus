@@ -1,3 +1,8 @@
+// Copyright (c) 2025 Michael Dello
+//
+// This software is provided under the MIT License.
+// See LICENSE file for details.
+
 //-----------------------------------------------------------------------------
 // Main Unit Tests
 //-----------------------------------------------------------------------------
@@ -26,13 +31,13 @@
 //-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
-// Generic helper function to capture stdout output for any callable, using 
+// Generic helper function to capture stdout output for any callable, using
 // forwarding on input parameters to maintain value categories (lvalue/rvalue)
 template <typename Func, typename... Args>
 std::string captureStdout(Func&& func, Args&&... args)
 {
     std::ostringstream buffer;
-    
+
     // Redirect std::cout
     std::streambuf* old = std::cout.rdbuf(buffer.rdbuf());
 

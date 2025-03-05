@@ -1,11 +1,16 @@
-#ifndef FACADEPATTERN_H
-#define FACADEPATTERN_H
+// Copyright (c) 2025 Michael Dello
+//
+// This software is provided under the MIT License.
+// See LICENSE file for details.
+
+#ifndef INCLUDE_FACADEPATTERN_H_
+#define INCLUDE_FACADEPATTERN_H_
 //--------------------------------------------------------------------------
 //
-// This header provides the types and class declarations to implement the 
+// This header provides the types and class declarations to implement the
 // Facade Design Pattern.
 //
-// In this example, the client uses the SignalData class to retrieve various 
+// In this example, the client uses the SignalData class to retrieve various
 // forms of signal data in real-time.
 //
 // The SignalData class simplifies the interaction between the client and
@@ -16,23 +21,23 @@
 //
 // Additional design principles, patterns, and modern C++ features used:
 //
-//    1. Dependency Inversion - Introduce unit test implementations for 
+//    1. Dependency Inversion - Introduce unit test implementations for
 //       hardware abstractions. These can be used in place of the
 //       Hardware Driver implementations depending on context.
 //
 //    2. Singleton - Ensure only a single instance of the Facade is used
 //
-//    3. Liskov's Substitution - Allow child class substitutions in client 
+//    3. Liskov's Substitution - Allow child class substitutions in client
 //       code based on context without the client needing to know
 //
-//    4. C++ Smart Pointers - Ensure a single pointer to an object is managed 
+//    4. C++ Smart Pointers - Ensure a single pointer to an object is managed
 //       throughout the program and used in a safe manner
 //
 // This design pattern decouples the client logic from the complexities of
 // using a complex subsytem, simplifying the client responsibilities, reducing
-// the risk of breakage if the subsystem requires changes in the future, and 
+// the risk of breakage if the subsystem requires changes in the future, and
 // improving maintainability.
-// 
+//
     //--------------------------------------------------------------------------
 
 #include <cstdint>
@@ -111,7 +116,7 @@ namespace SignalDataFacade
     class GPIODrv: public IGPIO
     {
     public:
-        std::optional<uint16_t> read() const;
+        std::optional<uint16_t> read() const override;
     };
 
     //=========================================================================
@@ -131,20 +136,20 @@ namespace SignalDataFacade
         // Singleton pattern:
         // Disallow clients to create an instance of this class
         SignalData(
-            std::unique_ptr<A2DConverterHAL> adcImpl, 
+            std::unique_ptr<A2DConverterHAL> adcImpl,
             std::unique_ptr<GPIOHAL> gpioImpl);
         //----------------------------------------------------------------------
         // Delete copy and assignment operators
         SignalData(const SignalData&) = delete;
         SignalData& operator=(const SignalData&) = delete;
         //----------------------------------------------------------------------
-    
+
     public:
         //----------------------------------------------------------------------
-        // Singleton pattern: 
+        // Singleton pattern:
         // Single Instance Accessor
         static SignalData& getInstance(
-            std::unique_ptr<A2DConverterHAL> adcImpl = nullptr, 
+            std::unique_ptr<A2DConverterHAL> adcImpl = nullptr,
             std::unique_ptr<GPIOHAL> gpioImpl = nullptr);
 
         // Data Accessor
@@ -161,4 +166,4 @@ namespace SignalDataFacade
 
 } // namespace SignalDataFacade
 
-#endif // FACADEPATTERN_H
+#endif // INCLUDE_FACADEPATTERN_H_
