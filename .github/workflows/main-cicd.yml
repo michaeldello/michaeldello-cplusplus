@@ -55,7 +55,7 @@ jobs:
   
       - name: Upload Artifacts (Binary & Logs)
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
           path: |
@@ -64,7 +64,7 @@ jobs:
 
       - name: Upload Unit Test Artifacts (Binaries & Reports)
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: unit-test-artifacts
           path: |
