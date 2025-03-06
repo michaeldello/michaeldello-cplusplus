@@ -5,7 +5,7 @@
 
 #ifndef INCLUDE_FACADEPATTERN_H_
 #define INCLUDE_FACADEPATTERN_H_
-//--------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 //
 // This header provides the types and class declarations to implement the
 // Facade Design Pattern.
@@ -38,7 +38,7 @@
 // the risk of breakage if the subsystem requires changes in the future, and
 // improving maintainability.
 //
-    //--------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 #include <cstdint>
 #include <memory>
@@ -46,13 +46,19 @@
 
 namespace SignalDataFacade
 {
-    //=========================================================================
+    //==========================================================================
     // ADC
-    //=========================================================================
+    //==========================================================================
 
     //--------------------------------------------------------------------------
     // Classes
     //--------------------------------------------------------------------------
+    // Class: IA2DConverter
+    //
+    // Description:
+    //    Abstract Interface for an ADC abstraction. Can't be instantiated.
+    //    Must be inherited and overridden.
+    //
     class IA2DConverter
     {
     public:
@@ -63,6 +69,12 @@ namespace SignalDataFacade
     };
 
     //--------------------------------------------------------------------------
+    // Class: A2DConverterHAL
+    //
+    // Description:
+    //    Abstracts the ADC in a HAL. This decouples the Application layer from
+    //    the Driver interface.
+    //
     class A2DConverterHAL
     {
     private:
@@ -74,7 +86,12 @@ namespace SignalDataFacade
     };
 
     //--------------------------------------------------------------------------
-    // Implementation for main context
+    // Class: ADCDrv
+    //
+    // Description:
+    //    This abstracts the ADC driver code. This decouples the HAL
+    //    layer from the Driver interface and OS code.
+    //
     class ADCDrv: public IA2DConverter
     {
     private:
@@ -86,13 +103,19 @@ namespace SignalDataFacade
         std::optional<uint16_t> read() const override;
     };
 
-    //=========================================================================
+    //==========================================================================
     // GPIO
-    //=========================================================================
+    //==========================================================================
 
     //--------------------------------------------------------------------------
     // Classes
     //--------------------------------------------------------------------------
+    // Class: IGPIO
+    //
+    // Description:
+    //    Abstract Interface for an GPIO abstraction. Can't be instantiated. 
+    //    Must be inherited and overridden.
+    //
     class IGPIO
     {
     public:
@@ -101,6 +124,12 @@ namespace SignalDataFacade
     };
 
     //--------------------------------------------------------------------------
+    // Class: GPIOHAL
+    //
+    // Description:
+    //    Abstracts the GPIO interface in a HAL. This decouples the Application 
+    //    layer from the Driver interface.
+    //
     class GPIOHAL
     {
     private:
@@ -112,7 +141,12 @@ namespace SignalDataFacade
     };
 
     //--------------------------------------------------------------------------
-    // Implementation for main context
+    // Class: GPIODrv
+    //
+    // Description:
+    //    This abstracts the GPIO driver code. This decouples the HAL
+    //    layer from the Driver interface and OS code.
+    //
     class GPIODrv: public IGPIO
     {
     public:
@@ -126,6 +160,13 @@ namespace SignalDataFacade
     //--------------------------------------------------------------------------
     // Classes
     //--------------------------------------------------------------------------
+    // Class: SignalData
+    //
+    // Description:
+    //    This provides a Facade for a client to access underlying signal data
+    //    classes. This simplifies and decouples the client code from the 
+    //    complexities of the underlying subsystem implementation.
+    //
     class SignalData
     {
     private:

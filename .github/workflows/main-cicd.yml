@@ -10,7 +10,7 @@ on:
       - main
 
 env:
-  DOCKER_IMAGE: "melroy89/cmake-docker:latest"
+  DOCKER_IMAGE: "kitware/cmake:latest"
   ROOT_DIR: "/app"
   BUILD_DIR: "build"
   SOURCE_DIR: "src/"
@@ -46,12 +46,10 @@ jobs:
               cd ${{env.BUILD_DIR}} &&
               ctest --output-on-failure --no-compress-output --test-output-size-passed ${{env.MAX_TEST_CASE_OUTPUT_BYTES}} | tee ${{env.TEST_LOG_ARTIFACT}}
           "
-        continue-on-error: true
           
       - name: Fail if Tests Fail
         run: |
           grep -q "100% tests passed" ${{env.TEST_LOG_ARTIFACT}} || (echo "XX - Unit tests failed!" && exit 1)
-        continue-on-error: true
   
       - name: Upload Artifacts (Binary & Logs)
         if: always()
@@ -91,7 +89,6 @@ jobs:
           # Prevent CI from failing on warnings with '|| true'
           run: |
             cppcheck --enable=all --inconclusive --std=c++20 --xml --output-file=${{env.CPPCHECK_REPORT_ARTIFACT}} ${{env.SOURCE_DIR}} 2> ${{env.CPPCHECK_LOG_ARTIFACT}} || true
-          continue-on-error: true
 
         - name: Fail if Cppcheck Errors Exceed Threshold of 10
           run: |
@@ -101,11 +98,10 @@ jobs:
               echo "XX - Too many Cppcheck errors ($error_count). Failing CI."
               exit 1
             fi      
-          continue-on-error: true
 
         - name: Upload Cppcheck Report
           if: always()
-          uses: actions/upload-artifact@v3
+          uses: actions/upload-artifact@v4
           with:
             name: cppcheck-report
             path: |
@@ -125,11 +121,10 @@ jobs:
               echo "XX - Too many Cpplint warnings ($warning_count). Failing CI."
               exit 1
             fi
-          continue-on-error: true
         
         - name: Upload cpplint Artifacts
           if: always()
-          uses: actions/upload-artifact@v3
+          uses: actions/upload-artifact@v4
           with:
             name: cpplint-report
             path: ${{env.CPPLINT_REPORT_ARTIFACT}}
