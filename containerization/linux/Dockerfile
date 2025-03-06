@@ -18,7 +18,8 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Catch2 for unit testing (header-only)
-RUN wget -O /usr/local/include/catch2.hpp https://github.com/catchorg/Catch2/releases/download/v3.4.0/catch.hpp
+# Rather than do it here, fetch Catch2 in CMakeLists.txt
+#RUN wget -O /usr/local/include/catch2.hpp https://github.com/catchorg/Catch2/releases/download/v3.4.0/catch.hpp
 
 # Set up a non-root user for Dev Containers
 ARG USERNAME=dev
@@ -26,7 +27,8 @@ RUN useradd -m ${USERNAME} && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" >> /etc/
 USER ${USERNAME}
 
 # Set the working directory
-WORKDIR /workspace
+WORKDIR /app
 
 # Default command (use bash shell)
-CMD ["/bin/bash"]
+# Uncomment for interactive use
+#CMD ["/bin/bash"]
