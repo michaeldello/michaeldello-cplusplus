@@ -10,7 +10,8 @@ on:
       - main
 
 env:
-  DOCKER_IMAGE: "kitware/cmake:latest"
+  DOCKER_IMAGE: "ubuntu:latest"
+  INSTALL_LIBS: "cmake cppcheck cpplint"
   ROOT_DIR: "/app"
   BUILD_DIR: "build"
   SOURCE_DIR: "src/"
@@ -40,6 +41,7 @@ jobs:
       - name: Build and Run Unit Tests
         run: |
           docker run --rm -v $(pwd):${{env.ROOT_DIR}} -w ${{env.ROOT_DIR}} ${{env.DOCKER_IMAGE}} /bin/bash -c "
+              apt update && apt install -y ${{env.INSTALL_LIBS}} && 
               rm -rf ${{env.BUILD_DIR}} &&
               cmake -B ${{env.BUILD_DIR}} 2>&1 | tee ${{env.ROOT_DIR}}/${{env.BUILD_LOG_ARTIFACT}} &&
               cmake --build ${{env.BUILD_DIR}} 2>&1 | tee -a ${{env.ROOT_DIR}}/${{env.BUILD_LOG_ARTIFACT}} &&
