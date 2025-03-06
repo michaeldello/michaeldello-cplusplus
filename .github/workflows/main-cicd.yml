@@ -10,7 +10,7 @@ on:
       - main
 
 env:
-  DOCKER_IMAGE: "ghcr.io/michaeldello/cpp-dev:latest"
+  DOCKER_IMAGE: "ghcr.io/michaeldello/michaeldello-cplusplus/cpp-dev:latest"
   INSTALL_LIBS: "cmake cppcheck cpplint"
   ROOT_DIR: "/app"
   BUILD_DIR: "build"
