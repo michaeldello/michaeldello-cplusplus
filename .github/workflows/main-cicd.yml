@@ -36,17 +36,16 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Log in to GitHub Container Registry (GHCR)
-        # Avoid storing credentials
+        # Avoid storing credentials (erased after job)
         run: |
-          mkdir -p /tmp/docker-config
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker --config /tmp/docker-config login ghcr.io -u "${{ github.actor }}" --password-stdin
+          export DOCKER_CONFIG=$(mktemp -d)
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
       # Run the build and unit testing in an existing container that supports 
       # CMake and Catch2 Unit Testing
       # Ensure clean build
       - name: Build and Run Unit Tests
         run: |
-          docker pull ${{env.DOCKER_IMAGE}}
           docker run --rm -v $(pwd):${{env.ROOT_DIR}} -w ${{env.ROOT_DIR}} ${{env.DOCKER_IMAGE}} /bin/bash -c "
               apt update && apt install -y ${{env.INSTALL_LIBS}} && 
               rm -rf ${{env.BUILD_DIR}} &&
