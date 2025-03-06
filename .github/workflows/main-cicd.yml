@@ -46,7 +46,7 @@ jobs:
       # Ensure clean build
       - name: Build and Run Unit Tests
         run: |
-          docker pull --config /tmp/docker-config ${{env.DOCKER_IMAGE}}
+          docker pull ${{env.DOCKER_IMAGE}}
           docker run --rm -v $(pwd):${{env.ROOT_DIR}} -w ${{env.ROOT_DIR}} ${{env.DOCKER_IMAGE}} /bin/bash -c "
               apt update && apt install -y ${{env.INSTALL_LIBS}} && 
               rm -rf ${{env.BUILD_DIR}} &&
