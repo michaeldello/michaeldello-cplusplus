@@ -17,14 +17,14 @@ env:
   DOCKER_IMAGE: "ghcr.io/michaeldello/cpp-dev:latest"
   INSTALL_LIBS: "cmake cppcheck cpplint"
   ROOT_DIR: "/app"
-  BUILD_DIR: "/app/build"
-  INCLUDE_DIR: "/app/include/"
-  SOURCE_DIR: "/app/src/"
-  BUILD_LOG_ARTIFACT: "/app/build.log"
-  TEST_LOG_ARTIFACT: "/app/unit-test-results.log"
-  CPPCHECK_REPORT_ARTIFACT: "/app/cppcheck-report.xml"
-  CPPCHECK_LOG_ARTIFACT: "/app/cppcheck-report.xml"
-  CPPLINT_REPORT_ARTIFACT: "/app/cpplint-report.txt"
+  BUILD_DIR: "build"
+  INCLUDE_DIR: "include/"
+  SOURCE_DIR: "src/"
+  BUILD_LOG_ARTIFACT: "build.log"
+  TEST_LOG_ARTIFACT: "unit-test-results.log"
+  CPPCHECK_REPORT_ARTIFACT: "cppcheck-report.xml"
+  CPPCHECK_LOG_ARTIFACT: "cppcheck-report.xml"
+  CPPLINT_REPORT_ARTIFACT: "cpplint-report.txt"
   MAX_TEST_CASE_OUTPUT_BYTES: 1000000
 
 jobs:
