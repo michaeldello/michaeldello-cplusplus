@@ -45,7 +45,7 @@ namespace SignalDataFacade
         ADCDrvStub();
         void start() override;
         void stop() override;
-        std::optional<uint16_t> read() const override;
+        std::optional<uint16_t> read() override;
     };
 
     //==========================================================================
@@ -64,7 +64,7 @@ namespace SignalDataFacade
     public:
         static uint16_t testValue;
         static bool bFail;
-        std::optional<uint16_t> read() const override;
+        std::optional<uint16_t> read() override;
     };
 
 } // namespace SignalDataFacade

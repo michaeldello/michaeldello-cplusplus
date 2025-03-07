@@ -63,7 +63,7 @@ namespace SignalDataFacade
     }
 
     //-------------------------------------------------------------------------
-    std::optional<uint16_t> ADCDrvStub::read() const
+    std::optional<uint16_t> ADCDrvStub::read()
     {
         // Read only if started
         if (bStarted && !bFail)
@@ -81,7 +81,7 @@ namespace SignalDataFacade
     bool GPIODrvStub::bFail = false;
 
     //-------------------------------------------------------------------------
-    std::optional<uint16_t> GPIODrvStub::read() const
+    std::optional<uint16_t> GPIODrvStub::read()
     {
         // Read only if started
         if (bFail)

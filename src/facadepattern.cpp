@@ -61,7 +61,7 @@ namespace SignalDataFacade
     }
 
     //-------------------------------------------------------------------------
-    std::optional<uint16_t> ADCDrv::read() const
+    std::optional<uint16_t> ADCDrv::read()
     {
         // Read only if started
         if (bStarted)
@@ -103,7 +103,7 @@ namespace SignalDataFacade
     //-------------------------------------------------------------------------
     // GPIO Driver Implementation
     //-------------------------------------------------------------------------
-    std::optional<uint16_t> GPIODrv::read() const
+    std::optional<uint16_t> GPIODrv::read()
     {
         // Return a random value simulating real hardware
         static std::random_device rd;

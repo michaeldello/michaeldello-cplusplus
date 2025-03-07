@@ -65,7 +65,7 @@ namespace SignalDataFacade
         virtual ~IA2DConverter() = default;
         virtual void start() = 0;
         virtual void stop() = 0;
-        virtual std::optional<uint16_t> read() const = 0;
+        virtual std::optional<uint16_t> read() = 0;
     };
 
     //--------------------------------------------------------------------------
@@ -100,7 +100,7 @@ namespace SignalDataFacade
         ADCDrv();
         void start() override;
         void stop() override;
-        std::optional<uint16_t> read() const override;
+        std::optional<uint16_t> read() override;
     };
 
     //==========================================================================
@@ -120,7 +120,7 @@ namespace SignalDataFacade
     {
     public:
         virtual ~IGPIO() = default;
-        virtual std::optional<uint16_t> read() const = 0;
+        virtual std::optional<uint16_t> read() = 0;
     };
 
     //--------------------------------------------------------------------------
@@ -150,7 +150,7 @@ namespace SignalDataFacade
     class GPIODrv: public IGPIO
     {
     public:
-        std::optional<uint16_t> read() const override;
+        std::optional<uint16_t> read() override;
     };
 
     //=========================================================================
