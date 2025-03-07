@@ -17,13 +17,14 @@ env:
   DOCKER_IMAGE: "ghcr.io/michaeldello/cpp-dev:latest"
   INSTALL_LIBS: "cmake cppcheck cpplint"
   ROOT_DIR: "/app"
-  BUILD_DIR: "build"
-  SOURCE_DIR: "src/"
-  BUILD_LOG_ARTIFACT: "build.log"
-  TEST_LOG_ARTIFACT: "unit-test-results.log"
-  CPPCHECK_REPORT_ARTIFACT: "cppcheck-report.xml"
-  CPPCHECK_LOG_ARTIFACT: "cppcheck-report.xml"
-  CPPLINT_REPORT_ARTIFACT: "cpplint-report.txt"
+  BUILD_DIR: "/app/build"
+  INCLUDE_DIR: "/app/include/"
+  SOURCE_DIR: "/app/src/"
+  BUILD_LOG_ARTIFACT: "/app/build.log"
+  TEST_LOG_ARTIFACT: "/app/unit-test-results.log"
+  CPPCHECK_REPORT_ARTIFACT: "/app/cppcheck-report.xml"
+  CPPCHECK_LOG_ARTIFACT: "/app/cppcheck-report.xml"
+  CPPLINT_REPORT_ARTIFACT: "/app/cpplint-report.txt"
   MAX_TEST_CASE_OUTPUT_BYTES: 1000000
 
 jobs:
@@ -56,6 +57,7 @@ jobs:
               cmake --build ${{env.BUILD_DIR}} 2>&1 | tee -a ${{env.ROOT_DIR}}/${{env.BUILD_LOG_ARTIFACT}} &&
               cd ${{env.BUILD_DIR}} &&
               ctest --output-on-failure --no-compress-output --test-output-size-passed ${{env.MAX_TEST_CASE_OUTPUT_BYTES}} | tee ${{env.TEST_LOG_ARTIFACT}}
+              cd ${{env.ROOT_DIR}} &&
           "
 
       - name: Log Out from GHCR
@@ -103,7 +105,7 @@ jobs:
         - name: Run Cppcheck (Static Analysis) and Save Report
           # Prevent CI from failing on warnings with '|| true'
           run: |
-            cppcheck --enable=all --inconclusive --std=c++20 --xml --output-file=${{env.CPPCHECK_REPORT_ARTIFACT}} ${{env.SOURCE_DIR}} 2> ${{env.CPPCHECK_LOG_ARTIFACT}} || true
+            cppcheck --enable=all --inconclusive --std=c++20 --xml --output-file=${{env.CPPCHECK_REPORT_ARTIFACT}} -I ${{env.INCLUDE_DIR}} ${{env.SOURCE_DIR}} 2> ${{env.CPPCHECK_LOG_ARTIFACT}} || true
 
         - name: Fail if Cppcheck Errors Exceed Threshold of 10
           run: |
