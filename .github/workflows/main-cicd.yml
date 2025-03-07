@@ -9,6 +9,8 @@ on:
     branches:
       - main
 
+# Allow this Action's jobs access repository contents and packages in the GitHub
+# Container Registry (GHCR)
 permissions:
   packages: read
   contents: read
@@ -103,6 +105,11 @@ jobs:
     steps:
         - name: Checkout Repository
           uses: actions/checkout@v4
+
+        - name: Install Cppcheck & Cpplint
+          run: |
+            sudo apt-get update && sudo apt-get install -y cppcheck python3-pip
+            pip install cpplint
 
         - name: Run Cppcheck (Static Analysis) and Save Report
           # Prevent CI from failing on warnings with '|| true'

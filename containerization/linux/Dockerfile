@@ -15,6 +15,8 @@ RUN apt-get update && apt-get install -y \
     curl \
     unzip \
     valgrind \
+    cppcheck \
+    cpplint \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Catch2 for unit testing (header-only)
