@@ -22,9 +22,9 @@ RUN apt-get update && apt-get install -y \
 #RUN wget -O /usr/local/include/catch2.hpp https://github.com/catchorg/Catch2/releases/download/v3.4.0/catch.hpp
 
 # Set up a non-root user for Dev Containers
-ARG USERNAME=dev
-RUN useradd -m ${USERNAME} && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-USER ${USERNAME}
+#ARG USERNAME=dev
+#RUN useradd -m ${USERNAME} && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+#USER ${USERNAME}
 
 # Set the working directory
 WORKDIR /app

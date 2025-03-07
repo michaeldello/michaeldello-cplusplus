@@ -41,6 +41,10 @@ To use the Docker container in GitHub actions:
 
     docker pull ghcr.io/*YOUR_GITHUB_USERNAME*/cpp-dev:latest
 
+Notes:
+
+1. The container will need to either be public, or if private, be made accessible by the repository
+
 
 # Build Code
 
