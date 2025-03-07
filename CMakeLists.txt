@@ -11,10 +11,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 #------------------------------------------------------------------------------
 
 # Generate debug symbols
-#set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Debug)
 
 # Use -g for debug symbols
-#set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 
 #------------------------------------------------------------------------------
 
@@ -60,3 +60,7 @@ foreach(TEST_SRC ${TEST_SOURCES})
     target_include_directories(${TEST_NAME} PRIVATE ${INCLUDE_DIR})
     add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
 endforeach()
+
+# Ensure test reports are generated in JUnit XML format
+set(CTEST_OUTPUT_ON_FAILURE TRUE)
+set(CTEST_JUNIT_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/unit-test-reports")

@@ -1,5 +1,10 @@
-#ifndef MAINHELP_H
-#define MAINHELP_H
+// Copyright (c) 2025 Michael Dello
+//
+// This software is provided under the MIT License.
+// See LICENSE file for details.
+
+#ifndef INCLUDE_MAINHELP_H_
+#define INCLUDE_MAINHELP_H_
 //-----------------------------------------------------------------------------
 //
 // This helper module decouples the User interface from the main() loop.
@@ -29,11 +34,13 @@ namespace mainhelp
     // Functions mapping to valid choices
     //-------------------------------------------------------------------------
     void adapter();
+
     //-------------------------------------------------------------------------
     void facade();
+
     //-------------------------------------------------------------------------
     void quit();
 
 }
 
-#endif // MAINHELP_H
+#endif // INCLUDE_MAINHELP_H_

@@ -1,12 +1,17 @@
+// Copyright (c) 2025 Michael Dello
+//
+// This software is provided under the MIT License.
+// See LICENSE file for details.
+
 //-----------------------------------------------------------------------------
 //
 // Facade Design Pattern Implementation
 //
 //-----------------------------------------------------------------------------
 
+#include "facadepattern.h"
 #include <iostream>
 #include <random>
-#include "facadepattern.h"
 
 namespace SignalDataFacade
 {
@@ -18,9 +23,9 @@ namespace SignalDataFacade
     // ADC HAL Implementation
     //---------------------------------------------------------------------------
     A2DConverterHAL::A2DConverterHAL(std::unique_ptr<IA2DConverter> adcImpl)
-    : upADC(std::move(adcImpl))
+    : upADC{std::move(adcImpl)}
     {
-        std::cout << "Creating new ADC HAL object" << std::endl; 
+        std::cout << "Creating new ADC HAL object" << std::endl;
     }
 
     //---------------------------------------------------------------------------
@@ -38,9 +43,9 @@ namespace SignalDataFacade
     //-------------------------------------------------------------------------
     // ADC Driver Implementation
     //-------------------------------------------------------------------------
-    ADCDrv::ADCDrv(): bStarted(false)
+    ADCDrv::ADCDrv(): bStarted{false}
     {
-        std::cout << "Creating new ADC Driver object" << std::endl; 
+        std::cout << "Creating new ADC Driver object" << std::endl;
     }
 
     //-------------------------------------------------------------------------
@@ -56,7 +61,7 @@ namespace SignalDataFacade
     }
 
     //-------------------------------------------------------------------------
-    std::optional<uint16_t> ADCDrv::read() const
+    std::optional<uint16_t> ADCDrv::read()
     {
         // Read only if started
         if (bStarted)
@@ -79,9 +84,9 @@ namespace SignalDataFacade
     // GPIO HAL Implementation
     //---------------------------------------------------------------------------
     GPIOHAL::GPIOHAL(std::unique_ptr<IGPIO> gpioImpl)
-    : upGPIO(std::move(gpioImpl))
+    : upGPIO{std::move(gpioImpl)}
     {
-        std::cout << "Creating new GPIO HAL object" << std::endl; 
+        std::cout << "Creating new GPIO HAL object" << std::endl;
     }
 
     //---------------------------------------------------------------------------
@@ -89,7 +94,7 @@ namespace SignalDataFacade
     {
         // Collect GPIO data
         // If no value, simulate no signal by returning 0
-        std::optional<uint16_t> currentGPIOSignalRead = 
+        std::optional<uint16_t> currentGPIOSignalRead =
             upGPIO->read().value_or(0);
 
         return currentGPIOSignalRead;
@@ -98,7 +103,7 @@ namespace SignalDataFacade
     //-------------------------------------------------------------------------
     // GPIO Driver Implementation
     //-------------------------------------------------------------------------
-    std::optional<uint16_t> GPIODrv::read() const
+    std::optional<uint16_t> GPIODrv::read()
     {
         // Return a random value simulating real hardware
         static std::random_device rd;
@@ -115,11 +120,11 @@ namespace SignalDataFacade
     // Signal Data Implementation
     //---------------------------------------------------------------------------
     SignalData::SignalData(
-        std::unique_ptr<A2DConverterHAL> adcImpl, 
+        std::unique_ptr<A2DConverterHAL> adcImpl,
         std::unique_ptr<GPIOHAL> gpioImpl)
     : adc{std::move(adcImpl)}, gpio{std::move(gpioImpl)}
     {
-        std::cout << "Creating new Signal Data object" << std::endl; 
+        std::cout << "Creating new Signal Data object" << std::endl;
     }
 
     //---------------------------------------------------------------------------
@@ -131,9 +136,9 @@ namespace SignalDataFacade
         // Transfer ownership if implementations provided,
         // otherwise create new unique implementations
         static SignalData instance(
-            adcImpl ? std::move(adcImpl) : 
+            adcImpl ? std::move(adcImpl) :
                 std::make_unique<A2DConverterHAL>(std::make_unique<ADCDrv>()),
-            gpioImpl ? std::move(gpioImpl) : 
+            gpioImpl ? std::move(gpioImpl) :
                 std::make_unique<GPIOHAL>(std::make_unique<GPIODrv>()));
 
         return instance;
@@ -141,11 +146,11 @@ namespace SignalDataFacade
 
     //---------------------------------------------------------------------------
     SignalData::sAggregateData::sAggregateData(
-        uint16_t analogData, 
+        uint16_t analogData,
         uint16_t digitalData)
-    : analog(analogData), digital(digitalData)
+    : analog{analogData}, digital{digitalData}
     {
-        std::cout << "Creating new Aggregate Data object" << std::endl; 
+        std::cout << "Creating new Aggregate Data object" << std::endl;
     }
 
     //---------------------------------------------------------------------------

@@ -1,3 +1,8 @@
+// Copyright (c) 2025 Michael Dello
+//
+// This software is provided under the MIT License.
+// See LICENSE file for details.
+
 //-----------------------------------------------------------------------------
 //
 // Description:
@@ -9,6 +14,7 @@
 //    Michael Dello
 //
 //-----------------------------------------------------------------------------
+
 #include <chrono>
 #include <functional>
 #include <iostream>
@@ -21,10 +27,10 @@
 // Constants
 //-----------------------------------------------------------------------------
 
-const long int MAX_CHARACTERS_ALLOWED = 
+constexpr long int MAX_CHARACTERS_ALLOWED =
     std::numeric_limits<std::streamsize>::max();
 
-const unsigned int SECONDS_TO_PAUSE = 3;
+constexpr unsigned int SECONDS_TO_PAUSE = 3;
 
 //-----------------------------------------------------------------------------
 // Functions
@@ -48,7 +54,7 @@ int main()
     };
 
     auto choice = 0;
-    
+
     while (true)
     {
         mainhelp::printMenu();
@@ -67,9 +73,9 @@ int main()
 
         // Validate and process choice
         if (menuActions.count(choice))
-        {  
+        {
             menuActions.at(choice)();
-        } 
+        }
         else
         {
             std::cout << "Invalid choice: " << choice << std::endl;

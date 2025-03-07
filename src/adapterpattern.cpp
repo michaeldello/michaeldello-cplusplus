@@ -1,12 +1,17 @@
+// Copyright (c) 2025 Michael Dello
+//
+// This software is provided under the MIT License.
+// See LICENSE file for details.
+
 //-----------------------------------------------------------------------------
 //
 // Robot Adapter Design Pattern Implementation
 //
 //-----------------------------------------------------------------------------
 
+#include "adapterpattern.h"
 #include <iostream>
 #include <random>
-#include "adapterpattern.h"
 
 namespace RobotAdapter
 {
@@ -14,28 +19,28 @@ namespace RobotAdapter
     // Static Variables
     //---------------------------------------------------------------------------
 
-    // Use high quality (Mersenne Twister) random number generator to 
+    // Use high quality (Mersenne Twister) random number generator to
     // simulate/seed
     // a functioning robot arm in a random state
     static std::random_device rd;  // Non-deterministic random seed
     static std::mt19937 gen(rd());
 
     // Create distributions per Robot Arm Implementation
-    static std::uniform_int_distribution<int> 
+    static std::uniform_int_distribution<int>
         ExistingRobotArmDist(0, ExistingRobotArm::MAX_MM);
 
-    static std::uniform_int_distribution<unsigned int> 
+    static std::uniform_int_distribution<unsigned int>
         NewRobotArmDistXY(0, NewRobotArm::MAX_XY_MM);
 
-    static std::uniform_int_distribution<unsigned int> 
+    static std::uniform_int_distribution<unsigned int>
         NewRobotArmDistZ(0, NewRobotArm::MAX_Z_MM);
 
     //---------------------------------------------------------------------------
     // ExistingRobotArm Implementation
     //---------------------------------------------------------------------------
     ExistingRobotArm::ExistingRobotArm()
-    : _currentX{ExistingRobotArmDist(gen)}, 
-      _currentY{ExistingRobotArmDist(gen)}, 
+    : _currentX{ExistingRobotArmDist(gen)},
+      _currentY{ExistingRobotArmDist(gen)},
       _currentZ{ExistingRobotArmDist(gen)}
     {
         std::cout << typeid(*this).name()
@@ -49,7 +54,7 @@ namespace RobotAdapter
     //---------------------------------------------------------------------------
     void ExistingRobotArm::_reportMove(int mm, const std::string &axis) const
     {
-        std::cout << typeid(*this).name() 
+        std::cout << typeid(*this).name()
                   << " - moving "
                   << axis
                   << " position by "
@@ -61,7 +66,7 @@ namespace RobotAdapter
     //---------------------------------------------------------------------------
     void ExistingRobotArm::_reportOutOfRange() const
     {
-        std::cout << typeid(*this).name() 
+        std::cout << typeid(*this).name()
                   << " - Request to move out of range"
                   << std::endl;
     }
@@ -69,30 +74,30 @@ namespace RobotAdapter
     //---------------------------------------------------------------------------
     int ExistingRobotArm::getCurrentX() const
     {
-        std::cout << typeid(*this).name() 
-                  << " - getting current X position" 
+        std::cout << typeid(*this).name()
+                  << " - getting current X position"
                   << std::endl;
-        
+
         return _currentX;
     }
 
     //---------------------------------------------------------------------------
     int ExistingRobotArm::getCurrentY() const
     {
-        std::cout << typeid(*this).name() 
-                  << " - getting current Y position" 
+        std::cout << typeid(*this).name()
+                  << " - getting current Y position"
                   << std::endl;
-        
+
         return _currentY;
     }
 
     //---------------------------------------------------------------------------
     int ExistingRobotArm::getCurrentZ() const
     {
-        std::cout << typeid(*this).name() 
-                  << " - getting current Z position" 
+        std::cout << typeid(*this).name()
+                  << " - getting current Z position"
                   << std::endl;
-        
+
         return _currentZ;
     }
 
@@ -105,7 +110,7 @@ namespace RobotAdapter
         {
             _reportOutOfRange();
             returncode = false;
-        } 
+        }
         else
         {
             _currentZ += mm;
@@ -122,7 +127,7 @@ namespace RobotAdapter
         {
             _reportOutOfRange();
             returncode = false;
-        } 
+        }
         else
         {
             _currentZ -= mm;
@@ -139,7 +144,7 @@ namespace RobotAdapter
         {
             _reportOutOfRange();
             returncode = false;
-        } 
+        }
         else
         {
             _currentY += mm;
@@ -156,7 +161,7 @@ namespace RobotAdapter
         {
             _reportOutOfRange();
             returncode = false;
-        } 
+        }
         else
         {
             _currentY -= mm;
@@ -173,7 +178,7 @@ namespace RobotAdapter
         {
             _reportOutOfRange();
             returncode = false;
-        } 
+        }
         else
         {
             _currentX += mm;
@@ -190,7 +195,7 @@ namespace RobotAdapter
         {
             _reportOutOfRange();
             returncode = false;
-        } 
+        }
         else
         {
             _currentX -= mm;
@@ -202,17 +207,17 @@ namespace RobotAdapter
     bool ExistingRobotArm::zero()
     {
         bool returncode = true;
-        if (_currentX < 0) 
-            returncode = right(_currentX); 
-        else 
+        if (_currentX < 0)
+            returncode = right(_currentX);
+        else
             returncode = left(_currentX);
-        if (_currentY < 0) 
+        if (_currentY < 0)
             returncode = returncode && back(_currentY);
-        else 
+        else
             returncode = returncode && forth(_currentY);
         returncode = returncode && down(_currentZ);
         return returncode;
-    } 
+    }
 
 
     //---------------------------------------------------------------------------
@@ -220,8 +225,8 @@ namespace RobotAdapter
     //---------------------------------------------------------------------------
     NewRobotArm::NewRobotArm(tPosition xyz)
     : _currentXYZ{
-        NewRobotArmDistXY(gen), 
-        NewRobotArmDistXY(gen), 
+        NewRobotArmDistXY(gen),
+        NewRobotArmDistXY(gen),
         NewRobotArmDistZ(gen)}
     {
         std::cout << typeid(*this).name()
@@ -238,18 +243,18 @@ namespace RobotAdapter
     bool NewRobotArm::moveXYZ(tPosition XYZmm)
     {
         bool returncode = true;
-        if ((XYZmm.at(AI_X) > MAX_XY_MM) || 
-            (XYZmm.at(AI_Y) > MAX_XY_MM) || 
+        if ((XYZmm.at(AI_X) > MAX_XY_MM) ||
+            (XYZmm.at(AI_Y) > MAX_XY_MM) ||
             (XYZmm.at(AI_Z) > MAX_Z_MM))
         {
-            std::cout << typeid(*this).name() 
-                        << " - Requested move out of range" 
+            std::cout << typeid(*this).name()
+                        << " - Requested move out of range"
                         << std::endl;
             returncode = false;
         }
         else
         {
-            std::cout << typeid(*this).name() 
+            std::cout << typeid(*this).name()
                     << " - Moving to position: {"
                     << XYZmm.at(AI_X)
                     << ", "

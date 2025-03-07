@@ -5,6 +5,8 @@ Working examples demonstrating design principles and pattern based solutions usi
 
 # Docker
 
+## Local Development
+
 Docker build and VSCode Dev Container specs are under the `containerization` folder.
 
 Symbolic linkage at the top level selects which container to use locally.
@@ -18,6 +20,30 @@ Run the Docker container with:
     docker run --rm -it --name cpp_dev_container -v $(pwd):/app cpp_dev
 
 Develop and/or execute within Docker container in VSCode by selecting **Reopen in Container** if prompted (VSCode should detect devcontainer file included in this project).
+
+## Use in GitHub Actions
+
+To use the Docker container in GitHub actions:
+
+1. Authenticate Docker with GitHub Container Registry
+
+    echo *YOUR_GITHUB_TOKEN* | docker login ghcr.io -u *YOUR_GITHUB_USERNAME* --password-stdin
+
+1. Build and tag the Docker image from the Dockerfile
+
+    docker build -t ghcr.io/*YOUR_GITHUB_USERNAME*/cpp-dev:latest .
+
+1. Push the image to GHCR
+
+    docker push ghcr.io/*YOUR_GITHUB_USERNAME*/cpp-dev:latest
+
+1. Use/Pull the container image in GitHub Actions
+
+    docker pull ghcr.io/*YOUR_GITHUB_USERNAME*/cpp-dev:latest
+
+Notes:
+
+1. The container will need to either be public, or if private, be made accessible by the repository
 
 
 # Build Code
@@ -100,3 +126,9 @@ Debugging Unit Tests requires building with debug symbols in CMakeLists.txt
 
     cmake -B build -DCMAKE_BUILD_TYPE=Debug
     cmake --build build
+
+# Static Code Analysis
+
+Install cppcheck and cpplint (Debian Container)
+
+    apt update && apt install -y cppcheck cpplint

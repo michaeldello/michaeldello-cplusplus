@@ -1,0 +1,163 @@
+name: Main Branch CI/CD
+
+# Triggers
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+# Allow this Action's jobs access repository contents and packages in the GitHub
+# Container Registry (GHCR)
+permissions:
+  packages: read
+  contents: read
+      
+env:
+  DOCKER_IMAGE: "ghcr.io/michaeldello/cpp-dev:latest"
+  INSTALL_LIBS: "cmake cppcheck cpplint"
+  ROOT_DIR: "/app"
+  BUILD_DIR: "build"
+  INCLUDE_DIR: "include/"
+  SOURCE_DIR: "src/"
+  BUILD_LOG_ARTIFACT: "build.log"
+  TEST_LOG_ARTIFACT: "unit-test-results.log"
+  CPPCHECK_REPORT_ARTIFACT: "cppcheck-report.xml"
+  CPPCHECK_LOG_ARTIFACT: "cppcheck-report.xml"
+  CPPLINT_REPORT_ARTIFACT: "cpplint-report.txt"
+  MAX_TEST_OUTPUT_BYTES: 1000000
+
+jobs:
+
+  #-----------------------------------------------------------------------------
+  build-and-unit-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GitHub Container Registry (GHCR)
+        # Avoid storing credentials (erased after job)
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | \
+              docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      # Run the build and unit testing in an existing container that supports 
+      # CMake and Catch2 Unit Testing
+      # Ensure clean build
+      - name: Build and Run Unit Tests
+        run: |
+          docker pull ${{env.DOCKER_IMAGE}}
+          docker run --rm -v $(pwd):${{env.ROOT_DIR}} -w ${{env.ROOT_DIR}} \
+                  ${{env.DOCKER_IMAGE}} /bin/bash -c "
+              rm -rf ${{env.BUILD_DIR}} &&
+              cmake -B ${{env.BUILD_DIR}} 2>&1 | \
+                  tee ${{env.ROOT_DIR}}/${{env.BUILD_LOG_ARTIFACT}} &&
+              cmake --build ${{env.BUILD_DIR}} 2>&1 | \
+                  tee -a ${{env.ROOT_DIR}}/${{env.BUILD_LOG_ARTIFACT}} &&
+              cd ${{env.BUILD_DIR}} &&
+              ctest --output-on-failure --no-compress-output \
+                  --test-output-size-passed ${{env.MAX_TEST_OUTPUT_BYTES}} | \
+                      tee ${{env.ROOT_DIR}}/${{env.TEST_LOG_ARTIFACT}} &&
+              cd ${{env.ROOT_DIR}}
+          "
+
+      - name: Log Out from GHCR
+        if: always()
+        run: docker logout ghcr.io
+
+      - name: Fail if Tests Fail
+        run: |
+          grep -q "100% tests passed" ${{env.TEST_LOG_ARTIFACT}} || \
+              (echo "XX - Unit tests failed!" && exit 1)
+  
+      - name: Upload Artifacts (Binary & Logs)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            ${{env.BUILD_LOG_ARTIFACT}}
+            ${{env.BUILD_DIR}}/run_cpp_examples
+
+      - name: Upload Unit Test Artifacts (Binaries & Reports)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-artifacts
+          path: |
+            ${{env.TEST_LOG_ARTIFACT}}
+            ${{env.BUILD_DIR}}/test_*
+            ${{env.BUILD_DIR}}/unit-test-reports/*
+
+  #-----------------------------------------------------------------------------
+  run-static-analysis:
+    runs-on: ubuntu-latest
+    needs: build-and-unit-test
+    if: always()
+
+    steps:
+        - name: Checkout Repository
+          uses: actions/checkout@v4
+
+        - name: Install Cppcheck & Cpplint
+          run: |
+            sudo apt-get update && sudo apt-get install -y cppcheck python3-pip
+            pip install cpplint
+
+        - name: Run Cppcheck (Static Analysis) and Save Report
+          # Prevent CI from failing on warnings with '|| true'
+          run: |
+            cppcheck --enable=all --inconclusive --std=c++20 --xml \
+                --suppress=missingIncludeSystem \
+                --output-file=${{env.CPPCHECK_REPORT_ARTIFACT}} \
+                    -I ${{env.INCLUDE_DIR}} ${{env.SOURCE_DIR}} 2> \
+                    ${{env.CPPCHECK_LOG_ARTIFACT}} || true
+
+        - name: Fail if Cppcheck Errors Exceed Threshold of 10
+          run: |
+            max_warnings=10
+            error_count=$(grep -c "<error " \\
+                ${{env.CPPCHECK_REPORT_ARTIFACT}} || echo 0)
+            if [ "$error_count" -gt "$max_warnings" ]; then
+              echo "XX - Too many Cppcheck errors ($error_count). Failing CI."
+              exit 1
+            fi      
+
+        - name: Upload Cppcheck Report
+          if: always()
+          uses: actions/upload-artifact@v4
+          with:
+            name: cppcheck-report
+            path: |
+              ${{env.CPPCHECK_LOG_ARTIFACT}}
+              ${{env.CPPCHECK_REPORT_ARTIFACT}}
+              
+        - name: Run Cpplint (Style Checking) and Save Report
+          if: always()
+          # Prevent CI from failing on warnings with '|| true'
+          run: |
+            cpplint --output=vs7 --recursive ${{env.SOURCE_DIR}} > \
+                ${{env.CPPLINT_REPORT_ARTIFACT}} 2>&1 || true
+
+        - name: Fail if Cpplint Warnings Exceed Threshold of 20
+          run: |
+            max_warnings=20
+            warning_count=$(wc -l < ${{env.CPPLINT_REPORT_ARTIFACT}} || echo 0)
+            if [ "$warning_count" -gt "$max_warnings" ]; then
+              echo "XX - Too many Cpplint warnings ($warning_count)"
+              exit 1
+            fi
+        
+        - name: Upload cpplint Artifacts
+          if: always()
+          uses: actions/upload-artifact@v4
+          with:
+            name: cpplint-report
+            path: ${{env.CPPLINT_REPORT_ARTIFACT}}
