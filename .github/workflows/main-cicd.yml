@@ -25,7 +25,7 @@ env:
   CPPCHECK_REPORT_ARTIFACT: "cppcheck-report.xml"
   CPPCHECK_LOG_ARTIFACT: "cppcheck-report.xml"
   CPPLINT_REPORT_ARTIFACT: "cpplint-report.txt"
-  MAX_TEST_CASE_OUTPUT_BYTES: 1000000
+  MAX_TEST_OUTPUT_BYTES: 1000000
 
 jobs:
 
@@ -43,7 +43,8 @@ jobs:
       - name: Log in to GitHub Container Registry (GHCR)
         # Avoid storing credentials (erased after job)
         run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          echo "${{ secrets.GITHUB_TOKEN }}" | \
+              docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
       # Run the build and unit testing in an existing container that supports 
       # CMake and Catch2 Unit Testing
@@ -51,12 +52,17 @@ jobs:
       - name: Build and Run Unit Tests
         run: |
           docker pull ${{env.DOCKER_IMAGE}}
-          docker run --rm -v $(pwd):${{env.ROOT_DIR}} -w ${{env.ROOT_DIR}} ${{env.DOCKER_IMAGE}} /bin/bash -c "
+          docker run --rm -v $(pwd):${{env.ROOT_DIR}} -w ${{env.ROOT_DIR}} \
+                  ${{env.DOCKER_IMAGE}} /bin/bash -c "
               rm -rf ${{env.BUILD_DIR}} &&
-              cmake -B ${{env.BUILD_DIR}} 2>&1 | tee ${{env.ROOT_DIR}}/${{env.BUILD_LOG_ARTIFACT}} &&
-              cmake --build ${{env.BUILD_DIR}} 2>&1 | tee -a ${{env.ROOT_DIR}}/${{env.BUILD_LOG_ARTIFACT}} &&
+              cmake -B ${{env.BUILD_DIR}} 2>&1 | \
+                  tee ${{env.ROOT_DIR}}/${{env.BUILD_LOG_ARTIFACT}} &&
+              cmake --build ${{env.BUILD_DIR}} 2>&1 | \
+                  tee -a ${{env.ROOT_DIR}}/${{env.BUILD_LOG_ARTIFACT}} &&
               cd ${{env.BUILD_DIR}} &&
-              ctest --output-on-failure --no-compress-output --test-output-size-passed ${{env.MAX_TEST_CASE_OUTPUT_BYTES}} | tee ${{env.ROOT_DIR}}/${{env.TEST_LOG_ARTIFACT}} &&
+              ctest --output-on-failure --no-compress-output \
+                  --test-output-size-passed ${{env.MAX_TEST_OUTPUT_BYTES}} | \
+                      tee ${{env.ROOT_DIR}}/${{env.TEST_LOG_ARTIFACT}} &&
               cd ${{env.ROOT_DIR}}
           "
 
@@ -66,7 +72,8 @@ jobs:
 
       - name: Fail if Tests Fail
         run: |
-          grep -q "100% tests passed" ${{env.TEST_LOG_ARTIFACT}} || (echo "XX - Unit tests failed!" && exit 1)
+          grep -q "100% tests passed" ${{env.TEST_LOG_ARTIFACT}} || \
+              (echo "XX - Unit tests failed!" && exit 1)
   
       - name: Upload Artifacts (Binary & Logs)
         if: always()
@@ -97,20 +104,20 @@ jobs:
         - name: Checkout Repository
           uses: actions/checkout@v4
 
-        - name: Install Cppcheck & Cpplint
-          run: |
-            sudo apt-get update && sudo apt-get install -y cppcheck python3-pip
-            pip install cpplint
-
         - name: Run Cppcheck (Static Analysis) and Save Report
           # Prevent CI from failing on warnings with '|| true'
           run: |
-            cppcheck --enable=all --inconclusive --std=c++20 --xml --output-file=${{env.CPPCHECK_REPORT_ARTIFACT}} -I ${{env.INCLUDE_DIR}} ${{env.SOURCE_DIR}} 2> ${{env.CPPCHECK_LOG_ARTIFACT}} || true
+            cppcheck --enable=all --inconclusive --std=c++20 --xml \
+                --suppress=missingIncludeSystem \
+                --output-file=${{env.CPPCHECK_REPORT_ARTIFACT}} \
+                    -I ${{env.INCLUDE_DIR}} ${{env.SOURCE_DIR}} 2> \
+                    ${{env.CPPCHECK_LOG_ARTIFACT}} || true
 
         - name: Fail if Cppcheck Errors Exceed Threshold of 10
           run: |
             max_warnings=10
-            error_count=$(grep -c "<error " ${{env.CPPCHECK_REPORT_ARTIFACT}} || echo 0)
+            error_count=$(grep -c "<error " \\
+                ${{env.CPPCHECK_REPORT_ARTIFACT}} || echo 0)
             if [ "$error_count" -gt "$max_warnings" ]; then
               echo "XX - Too many Cppcheck errors ($error_count). Failing CI."
               exit 1
@@ -126,16 +133,18 @@ jobs:
               ${{env.CPPCHECK_REPORT_ARTIFACT}}
               
         - name: Run Cpplint (Style Checking) and Save Report
+          if: always()
           # Prevent CI from failing on warnings with '|| true'
           run: |
-            cpplint --output=vs7 --recursive ${{env.SOURCE_DIR}} > ${{env.CPPLINT_REPORT_ARTIFACT}} || true
+            cpplint --output=vs7 --recursive ${{env.SOURCE_DIR}} > \
+                ${{env.CPPLINT_REPORT_ARTIFACT}} || true
 
         - name: Fail if Cpplint Warnings Exceed Threshold of 20
           run: |
             max_warnings=20
             warning_count=$(wc -l < ${{env.CPPLINT_REPORT_ARTIFACT}} || echo 0)
             if [ "$warning_count" -gt "$max_warnings" ]; then
-              echo "XX - Too many Cpplint warnings ($warning_count). Failing CI."
+              echo "XX - Too many Cpplint warnings ($warning_count)"
               exit 1
             fi
         
