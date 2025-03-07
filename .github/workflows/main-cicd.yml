@@ -143,8 +143,8 @@ jobs:
           if: always()
           # Prevent CI from failing on warnings with '|| true'
           run: |
-            cpplint --output=vs7 --recursive ${{env.SOURCE_DIR}} 2>&1 \
-                ${{env.CPPLINT_REPORT_ARTIFACT}} || true
+            cpplint --output=vs7 --recursive ${{env.SOURCE_DIR}} > \
+                ${{env.CPPLINT_REPORT_ARTIFACT}} 2>&1 || true
 
         - name: Fail if Cpplint Warnings Exceed Threshold of 20
           run: |
