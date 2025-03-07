@@ -56,8 +56,8 @@ jobs:
               cmake -B ${{env.BUILD_DIR}} 2>&1 | tee ${{env.ROOT_DIR}}/${{env.BUILD_LOG_ARTIFACT}} &&
               cmake --build ${{env.BUILD_DIR}} 2>&1 | tee -a ${{env.ROOT_DIR}}/${{env.BUILD_LOG_ARTIFACT}} &&
               cd ${{env.BUILD_DIR}} &&
-              ctest --output-on-failure --no-compress-output --test-output-size-passed ${{env.MAX_TEST_CASE_OUTPUT_BYTES}} | tee ${{env.TEST_LOG_ARTIFACT}}
-              cd ${{env.ROOT_DIR}} &&
+              ctest --output-on-failure --no-compress-output --test-output-size-passed ${{env.MAX_TEST_CASE_OUTPUT_BYTES}} | tee ${{env.TEST_LOG_ARTIFACT}} &&
+              cd ${{env.ROOT_DIR}}
           "
 
       - name: Log Out from GHCR
