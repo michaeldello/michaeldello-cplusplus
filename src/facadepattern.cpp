@@ -29,7 +29,7 @@ namespace SignalDataFacade
     }
 
     //---------------------------------------------------------------------------
-    std::optional<uint16_t> A2DConverterHAL::read()
+    std::optional<uint16_t> A2DConverterHAL::read() const
     {
         // Collect ADC data
         upADC->start();
@@ -90,7 +90,7 @@ namespace SignalDataFacade
     }
 
     //---------------------------------------------------------------------------
-    std::optional<uint16_t> GPIOHAL::read()
+    std::optional<uint16_t> GPIOHAL::read() const
     {
         // Collect GPIO data
         // If no value, simulate no signal by returning 0
@@ -154,7 +154,7 @@ namespace SignalDataFacade
     }
 
     //---------------------------------------------------------------------------
-    SignalData::sAggregateData SignalData::acquire()
+    SignalData::sAggregateData SignalData::acquire() const
     {
         // Collect Analog data component
         // If no value, simulate no signal by returning 0

@@ -82,7 +82,7 @@ namespace SignalDataFacade
     public:
         // Avoid implicit conversion by using explicit
         explicit A2DConverterHAL(std::unique_ptr<IA2DConverter> adcImpl);
-        std::optional<uint16_t> read();
+        std::optional<uint16_t> read() const;
     };
 
     //--------------------------------------------------------------------------
@@ -137,7 +137,7 @@ namespace SignalDataFacade
     public:
         // Avoid implicit conversion by using explicit
         explicit GPIOHAL(std::unique_ptr<IGPIO> gpioImpl);
-        std::optional<uint16_t> read();
+        std::optional<uint16_t> read() const;
     };
 
     //--------------------------------------------------------------------------
@@ -202,7 +202,7 @@ namespace SignalDataFacade
         };
 
         // Client's interface for obtaining data acquisition results
-        sAggregateData acquire();
+        sAggregateData acquire() const;
     };
 
 } // namespace SignalDataFacade
