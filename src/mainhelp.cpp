@@ -125,7 +125,7 @@ namespace mainhelp
         auto upGpioHAL =
             std::make_unique<SignalDataFacade::GPIOHAL>(std::move(upGpioDrv));
         std::cout << "Data Acquisition Subsystem Facade:" <<std::endl;
-        auto& facade =
+        const auto& facade =
             SignalDataFacade::SignalData::getInstance(
                 std::move(upA2dConverterHAL),
                 std::move(upGpioHAL));
