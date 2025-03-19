@@ -35,11 +35,94 @@
 //
 //------------------------------------------------------------------------------
 
+#include <string>
+
 namespace DUTProxy
 {
     //--------------------------------------------------------------------------
+    // Constants
+    //--------------------------------------------------------------------------
+
+    // Define a single instance of the constant representing the proxy TCP port
+    inline constexpr uint16_t DUT_PROXY_TCP_PORT = 42042;
+
+    // Tests that can be run, along with a stopping condition that provides an 
+    // overall result based on testing since the start of testing, or last stop
+    // condition
+    enum eTests
+    {
+        ETESTS_FUNCTION1,
+        ETESTS_FUNCTION2,
+        ETESTS_FUNCTION3,
+        ETESTS_STOP
+    };
+
+    // Testing result conditions, for both individual tests, and overall
+    // assessment (individual results AND'd together)
+    enum eTestResults
+    {
+        ETESTRESULTS_PASS       = 0,
+        ETESTRESULTS_FAIL       = 1,
+        ETESTRESULTS_INCOMPLETE = 3
+    };
+
+    //--------------------------------------------------------------------------
+    // PODs
+    //--------------------------------------------------------------------------
+    struct sDUTConfig_t
+    {
+        std::string sName;
+    };
+
+    struct sRemoteDUTConfig_t: public sDUTConfig_t
+    {
+        std::string sIPAddr;
+    };
+
+    //--------------------------------------------------------------------------
     // Classes
     //--------------------------------------------------------------------------
+    // Class: IDUT
+    //
+    // Description:
+    //    Abstract Interface for a Device Under Test (DUT) abstraction. Can't be
+    //    instantiated. Must be inherited and implemented.
+    //
+    class IDUT
+    {
+    public:
+        virtual ~IDUT() = default;
+        virtual eTestResults execute(eTests test) = 0;
+    };
+
+    //--------------------------------------------------------------------------
+    // Class: DUT
+    //
+    // Description:
+    //    A concrete DUT which can either be in the local memory space, or a 
+    //    remote memory space, in which case, a proxy is needed.
+    //
+    class DUT: public IDUT
+    {
+    public:
+        DUT(sDUTConfig_t sConfig);
+        eTestResults execute(eTests test) override;
+    };
+
+    //--------------------------------------------------------------------------
+    // Class: DUTProxyClient
+    //
+    // Description:
+    //    A concrete DUT with the additional functionality of a Proxy, in this
+    //    case, a TCP client that connects to a remote server to execute tests
+    //    on a remote DUT object.
+    //
+    class DUTDUTProxyClient: public IDUT
+    {
+    public:
+        DUT(sRemoteDUTConfig_t sConfig);
+        eTestResults execute(eTests test) override;
+    };
 
 } // namespace DUTProxy
 
