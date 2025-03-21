@@ -35,7 +35,9 @@
 //
 //------------------------------------------------------------------------------
 
+#include <atomic>
 #include <string>
+#include <thread>
 
 namespace DUTProxy
 {
@@ -49,21 +51,22 @@ namespace DUTProxy
     // Tests that can be run, along with a stopping condition that provides an 
     // overall result based on testing since the start of testing, or last stop
     // condition
-    enum eTests
+    enum class eTests: uint16_t
     {
         ETESTS_FUNCTION1,
         ETESTS_FUNCTION2,
         ETESTS_FUNCTION3,
-        ETESTS_STOP
+        ETESTS_STOP_TESTING = 0xFFFF
     };
 
     // Testing result conditions, for both individual tests, and overall
     // assessment (individual results AND'd together)
-    enum eTestResults
+    enum eTestResults: uint8_t
     {
-        ETESTRESULTS_PASS       = 0,
-        ETESTRESULTS_FAIL       = 1,
-        ETESTRESULTS_INCOMPLETE = 3
+        ETESTRESULTS_FAIL       = 0x0,
+        ETESTRESULTS_PASS       = 0x1,
+        ETESTRESULTS_INCOMPLETE = 0x2,
+        ETESTRESULTS_AMBIGUOUS  = 0x3
     };
 
     //--------------------------------------------------------------------------
@@ -106,7 +109,9 @@ namespace DUTProxy
     {
     public:
         DUT(sDUTConfig_t sConfig);
-        eTestResults execute(eTests test) override;
+        // Make this method available for override in a subclass, for unit test
+        // stubbing
+        virtual eTestResults execute(eTests test) override;
     };
 
     //--------------------------------------------------------------------------
@@ -117,11 +122,42 @@ namespace DUTProxy
     //    case, a TCP client that connects to a remote server to execute tests
     //    on a remote DUT object.
     //
-    class DUTDUTProxyClient: public IDUT
+    class DUTProxyClient: public IDUT
     {
+    private:
+        int socketFD;
     public:
-        DUT(sRemoteDUTConfig_t sConfig);
+        DUTProxyClient(sRemoteDUTConfig_t sConfig);
         eTestResults execute(eTests test) override;
+    };
+
+    //--------------------------------------------------------------------------
+    // Class: DUTProxyServer
+    //
+    // Description:
+    //    A concrete DUT with the additional functionality of a Proxy, in this
+    //    case, a TCP server that services requests from a connecting client to
+    //    execute tests on a DUT object with which it has an association.
+    //
+    class DUTProxyServer
+    {
+    private:
+        // Methods
+        void ServerEntry();
+        int handleClient(int clientSocket);
+
+        // Data Members
+        DUT &dut;
+        std::thread serverThread;
+        // Use a thread-safe variable to coordinate stopping the server thread
+        // from higher level context (destructor call)
+        std::atomic<bool> running;
+        int serverSocket;
+    public:
+        DUTProxyServer(DUT &targetDUT);
+        // Destructor will end server thread
+        ~DUTProxyServer();
+        void Start();
     };
 
 } // namespace DUTProxy
