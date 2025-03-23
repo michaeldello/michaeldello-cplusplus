@@ -48,25 +48,31 @@ namespace DUTProxy
     // Define a single instance of the constant representing the proxy TCP port
     inline constexpr uint16_t DUT_PROXY_TCP_PORT = 42042;
 
+    // Testing result conditions, for both individual tests, and overall
+    // assessment (individual results AND'd together)
+    enum class eTestResults: uint8_t
+    {
+        // Individual Test Results
+        FAIL       = 0x0,
+        PASS       = 0x1,
+        INCOMPLETE = 0x2,
+        NUM_POSSIBLE_TEST_RESULTS,
+        // Overall Results
+        FAILED     = FAIL, // Any single test failed
+        PASSED     = PASS, // All single tests passed
+        AMBIGUOUS  = 0x3,  // At least one each INCOMPLETE and PASS
+        NONE       = 0xFF  // Default, no testing yet
+    };
+
     // Tests that can be run, along with a stopping condition that provides an 
     // overall result based on testing since the start of testing, or last stop
     // condition
     enum class eTests: uint16_t
     {
-        ETESTS_FUNCTION1,
-        ETESTS_FUNCTION2,
-        ETESTS_FUNCTION3,
-        ETESTS_STOP_TESTING = 0xFFFF
-    };
-
-    // Testing result conditions, for both individual tests, and overall
-    // assessment (individual results AND'd together)
-    enum eTestResults: uint8_t
-    {
-        ETESTRESULTS_FAIL       = 0x0,
-        ETESTRESULTS_PASS       = 0x1,
-        ETESTRESULTS_INCOMPLETE = 0x2,
-        ETESTRESULTS_AMBIGUOUS  = 0x3
+        TEST_FEATURE1,
+        TEST_FEATURE2,
+        TEST_FEATURE3,
+        STOP_TESTING = 0xFFFF
     };
 
     //--------------------------------------------------------------------------
@@ -107,10 +113,20 @@ namespace DUTProxy
     //
     class DUT: public IDUT
     {
+    private:
+        eTestResults runningResult;
+        std::string sName;
     public:
         DUT(sDUTConfig_t sConfig);
         // Make this method available for override in a subclass, for unit test
         // stubbing
+        //
+        // Implement this in a predictable way since this is just an example:
+        //     The result of running a test is the numerical value of the
+        //     requested test, modulo the number of possible individual test
+        //     result values
+        //
+        // A "stop" condition returns and resets the overal test result
         virtual eTestResults execute(eTests test) override;
     };
 
