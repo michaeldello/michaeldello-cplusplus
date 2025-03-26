@@ -50,17 +50,17 @@ namespace DUTProxy
 
     // Testing result conditions, for both individual tests, and overall
     // assessment (individual results AND'd together)
-    enum class eTestResults: uint8_t
+    enum class eTestResults: uint16_t
     {
         // Individual Test Results
-        FAIL       = 0x0,
-        PASS       = 0x1,
-        INCOMPLETE = 0x2,
+        INCOMPLETE    = 0x0,
+        FAIL          = 0x1,
+        PASS          = 0x2,
         NUM_POSSIBLE_TEST_RESULTS,
         // Overall Results
         FAILED     = FAIL, // Any single test failed
         PASSED     = PASS, // All single tests passed
-        AMBIGUOUS  = 0x3,  // At least one each INCOMPLETE and PASS
+        AMBIGUOUS  = INCOMPLETE, // Nothing passed or failed, but not NONE
         NONE       = 0xFF  // Default, no testing yet
     };
 
@@ -69,9 +69,9 @@ namespace DUTProxy
     // condition
     enum class eTests: uint16_t
     {
-        TEST_FEATURE1,
-        TEST_FEATURE2,
-        TEST_FEATURE3,
+        TEST_INCOMPLETEFEATURE,
+        TEST_FAILINGFEATURE,
+        TEST_PASSINGFEATURE,
         STOP_TESTING = 0xFFFF
     };
 

@@ -37,5 +37,5 @@ TEST_CASE("Test execute() pass", "[dut-execute-pass]")
 {
     auto expectedValue = DUTProxy::eTestResults::PASS;
     DUTProxy::DUT dut{{"EX-DUT-1"}};
-    REQUIRE(dut.execute(DUTProxy::eTests::TEST_FEATURE1) == expectedValue);
+    REQUIRE(dut.execute(DUTProxy::eTests::TEST_PASSINGFEATURE) == expectedValue);
 }
