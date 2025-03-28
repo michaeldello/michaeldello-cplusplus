@@ -142,6 +142,8 @@ namespace DUTProxy
     {
     private:
         int socketFD;
+        std::string sDUTName;
+        std::string sDUTIPAddr;
     public:
         DUTProxyClient(sRemoteDUTConfig_t sConfig);
         eTestResults execute(eTests test) override;

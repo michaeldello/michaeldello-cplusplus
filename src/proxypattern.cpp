@@ -72,4 +72,28 @@ namespace DUTProxy
         return result;
     }
 
+    //---------------------------------------------------------------------------
+    // DUTProxyClient Implementation
+    //---------------------------------------------------------------------------
+    DUTProxyClient::DUTProxyClient(sRemoteDUTConfig_t sConfig)
+    : sDUTName{sConfig.sName}, sDUTIPAddr{sConfig.sIPAddr}
+    {
+        std::cout << "Creating new DUTProxyClient for DUT: (" 
+                  << sDUTName 
+                  << ", " 
+                  << sDUTIPAddr 
+                  << ")" 
+                  << std::endl;
+    }
+
+    //---------------------------------------------------------------------------
+    eTestResults DUTProxyClient::execute(eTests test)
+    {
+        // Send request to server, return result
+
+        eTestResults result{eTestResults::NONE};
+
+        return result;
+    }
+
 } // DUTProxy
