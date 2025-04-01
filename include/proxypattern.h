@@ -162,7 +162,7 @@ namespace DUTProxy
     private:
         // Methods
         void ServerEntry();
-        int handleClient(int clientSocket);
+        void handleClient(int clientSocket);
 
         // Data Members
         DUT &dut;
@@ -172,10 +172,10 @@ namespace DUTProxy
         std::atomic<bool> running;
         int serverSocket;
     public:
+        // Constructor will start server thread
         DUTProxyServer(DUT &targetDUT);
         // Destructor will end server thread
         ~DUTProxyServer();
-        void Start();
     };
 
 } // namespace DUTProxy

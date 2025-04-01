@@ -117,8 +117,16 @@ TEST_CASE("Test overall results", "[dut-overall-results]")
 
 TEST_CASE("Test proxy execute() pass", "[proxy-execute-pass]")
 {
+    // DUT params
+    std::string sDutName{"EX-DUT-1"};
+    std::string sDutIpAddr{"127.0.0.1"};
+
+    DUTProxy::DUT localDut{{sDutName}};
+    DUTProxy::DUTProxyServer proxyServer{localDut};
+
     auto expectedValue = DUTProxy::eTestResults::PASS;
-    DUTProxy::DUTProxyClient dutProxy{{"EX-DUT-1", "127.0.0.1"}};
+
+    DUTProxy::DUTProxyClient dutProxy{{sDutName, sDutIpAddr}};
     REQUIRE(
         dutProxy.execute(
             DUTProxy::eTests::TEST_PASSINGFEATURE) == expectedValue);
