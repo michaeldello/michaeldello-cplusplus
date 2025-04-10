@@ -3,16 +3,18 @@
 // This software is provided under the MIT License.
 // See LICENSE file for details.
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 //
 // Proxy Design Pattern Implementation
 //
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 #include "proxypattern.h"
 #include "common/st_enum_ops.h"
+#include <chrono>
 #include <iostream>
 #include <stdexcept>
+#include <thread>
 
 // Socket libraries
 #include <sys/types.h>
@@ -26,16 +28,16 @@ namespace DUTProxy
 {
     using namespace StronglyTypedEnumOps;
 
-    //---------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // DUT Implementation
-    //---------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     DUT::DUT(sDUTConfig_t sConfig)
     : runningResult{eTestResults::NONE}, sName{sConfig.sName}
     {
         std::cout << "Creating new DUT object with name: " << sName << std::endl;
     }
 
-    //---------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     eTestResults DUT::execute(eTests test)
     {
         // Simulate test execution as result value is the test value, modulo
@@ -81,26 +83,166 @@ namespace DUTProxy
         return result;
     }
 
+    //--------------------------------------------------------------------------
+    // Socket Class Implementation
+    //--------------------------------------------------------------------------
+    Socket::Socket(int domain, int type, int protocol)
+    {
+        // Use globally available socket function
+        fd = ::socket(domain, type, protocol);
+        if (fd < 0)
+        {
+            throw std::runtime_error(
+                "Failed to create socket" + 
+                std::string(std::strerror(errno)));
+        }
+    }
+
+    //--------------------------------------------------------------------------
+    Socket::Socket(int fd): fd(fd)
+    {
+        if (fd < 0)
+        {
+            throw std::invalid_argument("Invalid socket file descriptor");
+        }
+    }
+
+    //--------------------------------------------------------------------------
+    Socket::~Socket()
+    {
+        if (fd >= 0)
+        {
+            // Use globally available close() function
+            ::close(fd);
+        }
+    }
+
+    //--------------------------------------------------------------------------
+    Socket::Socket(Socket&& owned) noexcept: fd(owned.fd)
+    {
+        owned.fd = -1;
+    }
+
+    //--------------------------------------------------------------------------
+    Socket& Socket::operator=(Socket&& owned) noexcept
+    {
+        if (this != &owned)
+        {
+            if (fd >= 0)
+            {
+                // Use globally available socket close
+                ::close(fd);
+            }
+            fd = owned.fd;
+            owned.fd = -1;
+        }
+
+        return *this;
+    }
+
+    //--------------------------------------------------------------------------
+    int Socket::get() const
+    {
+        return fd;
+    }
+
+    //--------------------------------------------------------------------------
+    void Socket::setReceiveTimeout(int seconds)
+    {
+        timeval timeout{seconds,0};
+        if (setsockopt(
+                fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0)
+        {
+            throw std::runtime_error(
+                "Failed to set timeout" + 
+                std::string(std::strerror(errno)));
+        }
+    }
+
     //---------------------------------------------------------------------------
     // DUTProxyClient Implementation
     //---------------------------------------------------------------------------
     DUTProxyClient::DUTProxyClient(sRemoteDUTConfig_t sConfig)
-    : sDUTName{sConfig.sName}, sDUTIPAddr{sConfig.sIPAddr}
+    // Avoid extra copies, move instead
+    : sDUTName(std::move(sConfig.sName)),
+      sDUTIPAddr(std::move(sConfig.sIPAddr)),
+      socket(AF_INET, SOCK_STREAM, 0)
     {
         std::cout << "Creating new DUTProxyClient for DUT: (" 
                   << sDUTName 
                   << ", " 
                   << sDUTIPAddr 
-                  << ")" 
+                  << ")"
                   << std::endl;
+
+        connectToServer();
+    }
+
+    //---------------------------------------------------------------------------
+    void DUTProxyClient::connectToServer()
+    {
+        // Define the server connect address
+        sockaddr_in serverAddr
+        {
+            .sin_family = AF_INET,
+            .sin_port = htons(DUT_PROXY_TCP_PORT),
+            .sin_addr = {.s_addr = inet_addr(sDUTIPAddr.c_str())}
+        };
+
+        // Connect to the server using the globally available connect()
+        // function
+        if (::connect(
+                socket.get(), 
+                reinterpret_cast<sockaddr*>(&serverAddr), 
+                sizeof(serverAddr)) < 0)
+        {
+            throw std::runtime_error(
+                "Connection failed on: " + 
+                std::string(std::strerror(errno)));
+        }
+
+        socket.setReceiveTimeout(5);
+        
+        std::cout << "Connected to server at " 
+                    << sDUTIPAddr
+                    << ":"
+                    << DUT_PROXY_TCP_PORT
+                    << std::endl;
     }
 
     //---------------------------------------------------------------------------
     eTestResults DUTProxyClient::execute(eTests test)
     {
-        // Send request to server, return result
+        eTestResults result{eTestResults::INCOMPLETE};
 
-        eTestResults result{eTestResults::NONE};
+        uint16_t request = static_cast<uint16_t>(test);
+
+        // Send request to server, return result
+        ssize_t sent = send(socket.get(), &request, sizeof(request), 0);
+
+        if (sent != sizeof(request))
+        {
+            std::cerr << "Unexpected: Failed to send Request" << std::endl;
+        }
+        else
+        {
+            // Receive the result
+            uint16_t rawRsp;
+            ssize_t received = recv(socket.get(), &rawRsp, sizeof(rawRsp), 0);
+            // Evaluate the result
+            if (received == 0)
+            {
+                std::cerr << "Server closed connection" << std::endl;
+            }
+            else if (received < 0)
+            {
+                std::cerr << "Receive error: " << strerror(errno) << std::endl;
+            }
+            else
+            {
+                result = static_cast<eTestResults>(rawRsp);
+            }
+        }
 
         return result;
     }
@@ -109,35 +251,34 @@ namespace DUTProxy
     // DUTProxyServer Implementation
     //---------------------------------------------------------------------------
     DUTProxyServer::DUTProxyServer(DUT &targetDUT)
-    : dut{targetDUT}, running{false}, serverSocket{-1}
+    : dut(targetDUT), running(false), serverSocket(AF_INET, SOCK_STREAM, 0)
     {
-        // Create socket
-        serverSocket = socket(AF_INET, SOCK_STREAM, 0);
-        if (serverSocket < 0)
+        // Set and bind socket to this host
+        sockaddr_in addr
         {
-            throw std::runtime_error("Failed to create DUTProxyServer socket");
-        }
-
-        // Set socket options
+            .sin_family = AF_INET,
+            .sin_port = htons(DUT_PROXY_TCP_PORT),
+            .sin_addr = {.s_addr = INADDR_ANY}
+        };
         int opt = 1;
-        setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-
-        // Bind socket
-        sockaddr_in addr{};
-        addr.sin_family = AF_INET;
-        addr.sin_addr.s_addr = INADDR_ANY;
-        addr.sin_port = htons(DUT_PROXY_TCP_PORT);
-        if (bind(serverSocket, (sockaddr*)&addr, sizeof(addr)) < 0)
+        // Use globally available socket option function
+        ::setsockopt(
+            serverSocket.get(), SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+        // Use globally available socket bind function
+        if (::bind(
+                serverSocket.get(),
+                reinterpret_cast<sockaddr*>(&addr),
+                sizeof(addr)) < 0)
         {
-            close(serverSocket);
-            throw std::runtime_error("Bind failed");
+            throw std::runtime_error(
+                "Bind failed" + std::string(std::strerror(errno)));
         }
 
-        // Start listening
-        if (listen(serverSocket, SOMAXCONN) < 0)
+        // Start listening using the globally available function
+        if (::listen(serverSocket.get(), SOMAXCONN) < 0)
         {
-            close(serverSocket);
-            throw std::runtime_error("Listen failed");
+            throw std::runtime_error(
+                "Listen failed" + std::string(std::strerror(errno)));
         }
 
         // Start the server loop
@@ -153,9 +294,9 @@ namespace DUTProxy
         // Discontinue server thread's loop
         running = false;
 
-        // Force-close the socket to unblock accept()
-        shutdown(serverSocket, SHUT_RDWR);
-        close(serverSocket);
+        // Force-close the socket to unblock accept() using the globally
+        // available function
+        ::shutdown(serverSocket.get(), SHUT_RDWR);
 
         // Wait for server thread to exit
         if (serverThread.joinable())
@@ -174,9 +315,12 @@ namespace DUTProxy
             sockaddr_in clientAddr{};
             socklen_t clientLen = sizeof(clientAddr);
             
-            // Accept incoming connection
+            // Accept incoming connection using globally available function
             int clientSocket =
-                accept(serverSocket, (sockaddr*)&clientAddr, &clientLen);
+                ::accept(
+                    serverSocket.get(),
+                    reinterpret_cast<sockaddr*>(&clientAddr),
+                    &clientLen);
             if (clientSocket < 0)
             {
                 // Stop if shutting down
@@ -187,16 +331,35 @@ namespace DUTProxy
 
             // Handle client inline, client will close the connection when it
             // is done
-            handleClient(clientSocket);
+            handleClient(Socket(clientSocket));
 
             close(clientSocket);
         }
     }
 
     //---------------------------------------------------------------------------
-    void DUTProxyServer::handleClient(int clientSocket)
+    void DUTProxyServer::handleClient(Socket&& clientSocket)
     {
-        std::cout << "Processing client requests" << std::endl;
+        while (running)
+        {
+            std::cout << "Processing client requests" << std::endl;
+            uint16_t rawRequest{0};
+            // Receive request using globally available recv()
+            ssize_t bytes = 
+                ::recv(clientSocket.get(), &rawRequest, sizeof(rawRequest), 0);
+            if (bytes <= 0)
+            {
+                std::cerr << "Unexpected: received no data" << std::endl;
+                break;
+            }
+
+            eTests testToRun = static_cast<eTests>(rawRequest);
+            eTestResults result = dut.execute(testToRun);
+
+            uint16_t rawResult = static_cast<uint16_t>(result);
+            // Send using globally available send()
+            ::send(clientSocket.get(), &rawResult, sizeof(rawResult), 0);
+        }
     }
 
 } // DUTProxy

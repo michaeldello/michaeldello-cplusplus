@@ -131,3 +131,95 @@ TEST_CASE("Test proxy execute() pass", "[proxy-execute-pass]")
         dutProxy.execute(
             DUTProxy::eTests::TEST_PASSINGFEATURE) == expectedValue);
 }
+
+TEST_CASE("Test proxy execute() fail", "[proxy-execute-fail]")
+{
+    // DUT params
+    std::string sDutName{"EX-DUT-1"};
+    std::string sDutIpAddr{"127.0.0.1"};
+
+    DUTProxy::DUT localDut{{sDutName}};
+    DUTProxy::DUTProxyServer proxyServer{localDut};
+
+    auto expectedValue = DUTProxy::eTestResults::FAIL;
+
+    DUTProxy::DUTProxyClient dutProxy{{sDutName, sDutIpAddr}};
+    REQUIRE(
+        dutProxy.execute(
+            DUTProxy::eTests::TEST_FAILINGFEATURE) == expectedValue);
+}
+
+TEST_CASE("Test proxy execute() incomplete", "[proxy-execute-incomplete]")
+{
+    // DUT params
+    std::string sDutName{"EX-DUT-1"};
+    std::string sDutIpAddr{"127.0.0.1"};
+
+    DUTProxy::DUT localDut{{sDutName}};
+    DUTProxy::DUTProxyServer proxyServer{localDut};
+
+    auto expectedValue = DUTProxy::eTestResults::AMBIGUOUS;
+
+    DUTProxy::DUTProxyClient dutProxy{{sDutName, sDutIpAddr}};
+    REQUIRE(
+        dutProxy.execute(
+            DUTProxy::eTests::TEST_INCOMPLETEFEATURE) == expectedValue);
+}
+
+TEST_CASE("Test proxy overall results", "[proxy-overall-results]")
+{
+    // DUT params
+    std::string sDutName{"EX-DUT-1"};
+    std::string sDutIpAddr{"127.0.0.1"};
+
+    DUTProxy::DUT localDut{{sDutName}};
+    DUTProxy::DUTProxyServer proxyServer{localDut};
+    DUTProxy::DUTProxyClient dutProxy{{sDutName, sDutIpAddr}};
+
+    // Test Default/Initialization
+    auto expectedValue = DUTProxy::eTestResults::NONE;
+    
+    REQUIRE(dutProxy.execute(DUTProxy::eTests::STOP_TESTING) == expectedValue);
+
+    // Test Ambiguous
+    expectedValue = DUTProxy::eTestResults::AMBIGUOUS;
+    dutProxy.execute(DUTProxy::eTests::TEST_INCOMPLETEFEATURE);
+    REQUIRE(dutProxy.execute(DUTProxy::eTests::STOP_TESTING) == expectedValue);
+    expectedValue = DUTProxy::eTestResults::NONE;
+    REQUIRE(dutProxy.execute(DUTProxy::eTests::STOP_TESTING) == expectedValue);
+
+    // Test Passed
+    expectedValue = DUTProxy::eTestResults::PASSED;
+    dutProxy.execute(DUTProxy::eTests::TEST_PASSINGFEATURE);
+    REQUIRE(dutProxy.execute(DUTProxy::eTests::STOP_TESTING) == expectedValue);
+    expectedValue = DUTProxy::eTestResults::NONE;
+    REQUIRE(dutProxy.execute(DUTProxy::eTests::STOP_TESTING) == expectedValue);
+    //
+    expectedValue = DUTProxy::eTestResults::PASSED;
+    dutProxy.execute(DUTProxy::eTests::TEST_PASSINGFEATURE);
+    dutProxy.execute(DUTProxy::eTests::TEST_INCOMPLETEFEATURE);
+    REQUIRE(dutProxy.execute(DUTProxy::eTests::STOP_TESTING) == expectedValue);
+    expectedValue = DUTProxy::eTestResults::NONE;
+    REQUIRE(dutProxy.execute(DUTProxy::eTests::STOP_TESTING) == expectedValue);
+
+    // Test Failed
+    expectedValue = DUTProxy::eTestResults::FAILED;
+    dutProxy.execute(DUTProxy::eTests::TEST_FAILINGFEATURE);
+    REQUIRE(dutProxy.execute(DUTProxy::eTests::STOP_TESTING) == expectedValue);
+    expectedValue = DUTProxy::eTestResults::NONE;
+    REQUIRE(dutProxy.execute(DUTProxy::eTests::STOP_TESTING) == expectedValue);
+    //
+    expectedValue = DUTProxy::eTestResults::FAILED;
+    dutProxy.execute(DUTProxy::eTests::TEST_FAILINGFEATURE);
+    dutProxy.execute(DUTProxy::eTests::TEST_PASSINGFEATURE);
+    REQUIRE(dutProxy.execute(DUTProxy::eTests::STOP_TESTING) == expectedValue);
+    expectedValue = DUTProxy::eTestResults::NONE;
+    REQUIRE(dutProxy.execute(DUTProxy::eTests::STOP_TESTING) == expectedValue);
+    //
+    expectedValue = DUTProxy::eTestResults::FAILED;
+    dutProxy.execute(DUTProxy::eTests::TEST_FAILINGFEATURE);
+    dutProxy.execute(DUTProxy::eTests::TEST_INCOMPLETEFEATURE);
+    REQUIRE(dutProxy.execute(DUTProxy::eTests::STOP_TESTING) == expectedValue);
+    expectedValue = DUTProxy::eTestResults::NONE;
+    REQUIRE(dutProxy.execute(DUTProxy::eTests::STOP_TESTING) == expectedValue);
+}

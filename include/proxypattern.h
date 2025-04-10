@@ -113,9 +113,6 @@ namespace DUTProxy
     //
     class DUT: public IDUT
     {
-    private:
-        eTestResults runningResult;
-        std::string sName;
     public:
         DUT(sDUTConfig_t sConfig);
         // Make this method available for override in a subclass, for unit test
@@ -128,6 +125,47 @@ namespace DUTProxy
         //
         // A "stop" condition returns and resets the overal test result
         virtual eTestResults execute(eTests test) override;
+    private:
+        eTestResults runningResult;
+        std::string sName;
+    };
+
+    //--------------------------------------------------------------------------
+    // Socket Class
+    //--------------------------------------------------------------------------
+    //
+    // Abstract a C-style socket object for use in the DUT proxy classes
+    //
+    //--------------------------------------------------------------------------
+    class Socket
+    {
+    public:
+        // Force explicit contruction to avoid implicit conversions
+        // From C-style socket specs
+        explicit Socket(int domain, int type, int protocol);
+        // From socket file descriptors (adopting)
+        explicit Socket(int fd);
+        ~Socket();
+
+        // Disable standard copy and assignment:
+        // underlying data (file descriptor) is a system resource
+        Socket(const Socket&) = delete;
+        Socket& operator=(const Socket&) = delete;
+
+        // Allow ownership transfer as it will maintain system resource
+        // coherence
+        Socket(Socket&& owned) noexcept;
+        Socket& operator=(Socket&& owned) noexcept;
+
+        //----------------------------------------------------------------------
+        int get() const;
+
+        //----------------------------------------------------------------------
+        void setReceiveTimeout(int seconds);
+
+    private:
+        // Underlying socket file descriptor
+        int fd;
     };
 
     //--------------------------------------------------------------------------
@@ -140,13 +178,18 @@ namespace DUTProxy
     //
     class DUTProxyClient: public IDUT
     {
-    private:
-        int socketFD;
-        std::string sDUTName;
-        std::string sDUTIPAddr;
     public:
         DUTProxyClient(sRemoteDUTConfig_t sConfig);
+
         eTestResults execute(eTests test) override;
+
+    private:
+        // Data members
+        Socket socket;
+        std::string sDUTName;
+        std::string sDUTIPAddr;
+        // Methods
+        void connectToServer();
     };
 
     //--------------------------------------------------------------------------
@@ -159,10 +202,15 @@ namespace DUTProxy
     //
     class DUTProxyServer
     {
+    public:
+        // Constructor will start server thread
+        DUTProxyServer(DUT &targetDUT);
+        // Destructor will end server thread
+        ~DUTProxyServer();
     private:
         // Methods
         void ServerEntry();
-        void handleClient(int clientSocket);
+        void handleClient(Socket&& clientSocket);
 
         // Data Members
         DUT &dut;
@@ -170,12 +218,7 @@ namespace DUTProxy
         // Use a thread-safe variable to coordinate stopping the server thread
         // from higher level context (destructor call)
         std::atomic<bool> running;
-        int serverSocket;
-    public:
-        // Constructor will start server thread
-        DUTProxyServer(DUT &targetDUT);
-        // Destructor will end server thread
-        ~DUTProxyServer();
+        Socket serverSocket;
     };
 
 } // namespace DUTProxy
