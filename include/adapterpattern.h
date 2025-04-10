@@ -7,8 +7,8 @@
 #define INCLUDE_ADAPTERPATTERN_H_
 //------------------------------------------------------------------------------
 //
-// This header provides the types and class declarations to implement the
-// Adapter Design Pattern.
+// This header provides the types and class declarations to implement an
+// Adapter Design Pattern example.
 //
 // In this example, the client uses the RobotArmInterface to control robot arms.
 // An existing robot arm class, ExistingRobotArm, implements this interface.

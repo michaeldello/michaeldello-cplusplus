@@ -11,7 +11,9 @@
 
 #include "facadepattern.h"
 #include <iostream>
+#include <memory>
 #include <random>
+#include <utility>
 
 namespace SignalDataFacade
 {

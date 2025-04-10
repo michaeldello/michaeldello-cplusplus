@@ -27,10 +27,10 @@
 // Constants
 //-----------------------------------------------------------------------------
 
-constexpr long int MAX_CHARACTERS_ALLOWED =
+constexpr int64_t MAX_CHARACTERS_ALLOWED =
     std::numeric_limits<std::streamsize>::max();
 
-constexpr unsigned int SECONDS_TO_PAUSE = 3;
+constexpr uint32_t SECONDS_TO_PAUSE = 3;
 
 //-----------------------------------------------------------------------------
 // Functions
@@ -46,11 +46,12 @@ void allowObservation()
 int main()
 {
     // Map valid choices to functions
-    const std::unordered_map<int, std::function<void()>> menuActions
+    const std::unordered_map<int32_t, std::function<void()>> menuActions
     {
         {mainhelp::SELECTION_QUIT, mainhelp::quit},
         {mainhelp::SELECTION_ADAPTER, mainhelp::adapter},
-        {mainhelp::SELECTION_FACADE, mainhelp::facade}
+        {mainhelp::SELECTION_FACADE, mainhelp::facade},
+        {mainhelp::SELECTION_PROXY, mainhelp::proxy}
     };
 
     auto choice = 0;

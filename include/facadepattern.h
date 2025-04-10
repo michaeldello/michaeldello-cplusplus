@@ -7,8 +7,8 @@
 #define INCLUDE_FACADEPATTERN_H_
 //------------------------------------------------------------------------------
 //
-// This header provides the types and class declarations to implement the
-// Facade Design Pattern.
+// This header provides the types and class declarations to implement a
+// Facade Design Pattern example.
 //
 // In this example, the client uses the SignalData class to retrieve various
 // forms of signal data in real-time.

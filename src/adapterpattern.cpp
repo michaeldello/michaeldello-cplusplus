@@ -11,6 +11,7 @@
 
 #include "adapterpattern.h"
 #include <iostream>
+#include <string>
 #include <random>
 
 namespace RobotAdapter
