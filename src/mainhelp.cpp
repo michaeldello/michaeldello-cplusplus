@@ -17,8 +17,10 @@
 #include <iostream>
 #include <memory>
 #include <ranges>
+#include <utility>
 #include "adapterpattern.h"
 #include "facadepattern.h"
+#include "proxypattern.h"
 
 namespace // anonymous
 {
@@ -59,7 +61,10 @@ namespace mainhelp
         std::cout << SELECTION_FACADE
                   << ". Facade Design Pattern"
                   << std::endl;
-         std::cout << std::endl;
+        std::cout << SELECTION_PROXY
+                  << ". Proxy Design Pattern"
+                  << std::endl;
+        std::cout << std::endl;
         std::cout << "=======================================" << std::endl;
         std::cout << std::endl;
         std::cout << "Enter your selection:  ";
@@ -142,6 +147,32 @@ namespace mainhelp
                       << acquiredData.digital
                       << std::endl;
         }
+        std::cout << "-------------------------------------------" << std::endl;
+    }
+
+    //--------------------------------------------------------------------------
+    void proxy()
+    {
+        echoSelection(SELECTION_PROXY, __func__);
+        // Call the example's module class method(s)
+        std::cout << "-------------------------------------------" << std::endl;
+        std::cout << "Executing Proxy Design Pattern Example..." << std::endl;
+        std::cout << "-------------------------------------------" << std::endl;
+        std::cout << "Target (Remote) DUT:" <<std::endl;
+        std::string sDutName{"EXAMPLE-DUT-1"};
+        std::string sDutIpAddr{"127.0.0.1"};
+        DUTProxy::DUT localDut{{sDutName}};
+        std::cout << "-------------------------------------------" << std::endl;
+        std::cout << "Proxy Server:" <<std::endl;
+        DUTProxy::DUTProxyServer proxyServer{localDut};
+        std::cout << "-------------------------------------------" << std::endl;
+        std::cout << "Proxy Client:" <<std::endl;
+        DUTProxy::DUTProxyClient dutProxy{{sDutName, sDutIpAddr}};
+        std::cout << "Exercise Proxy to Run Tests on Remote DUT:" <<std::endl;
+        dutProxy.execute(DUTProxy::eTests::TEST_PASSINGFEATURE);
+        dutProxy.execute(DUTProxy::eTests::TEST_INCOMPLETEFEATURE);
+        dutProxy.execute(DUTProxy::eTests::TEST_FAILINGFEATURE);
+        dutProxy.execute(DUTProxy::eTests::STOP_TESTING);
         std::cout << "-------------------------------------------" << std::endl;
     }
 

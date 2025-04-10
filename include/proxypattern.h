@@ -64,6 +64,10 @@ namespace DUTProxy
         NONE       = 0xFF  // Default, no testing yet
     };
 
+    // Convert a test result enum value to a string (literal, safe to return 
+    // its address in read-only static memory)
+    const char* toString(eTestResults result);
+
     // Tests that can be run, along with a stopping condition that provides an 
     // overall result based on testing since the start of testing, or last stop
     // condition
@@ -74,6 +78,10 @@ namespace DUTProxy
         TEST_PASSINGFEATURE,
         STOP_TESTING = 0xFFFF
     };
+
+    // Convert a test enum value to a string (literal, safe to return
+    // its address in read-only static memory)
+    const char* toString(eTests test);
 
     //--------------------------------------------------------------------------
     // PODs

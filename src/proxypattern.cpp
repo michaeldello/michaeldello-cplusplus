@@ -10,11 +10,6 @@
 //------------------------------------------------------------------------------
 
 #include "proxypattern.h"
-#include "common/st_enum_ops.h"
-#include <chrono>
-#include <iostream>
-#include <stdexcept>
-#include <thread>
 
 // Socket libraries
 #include <sys/types.h>
@@ -24,9 +19,43 @@
 #include <unistd.h>
 #include <cstring>
 
+#include <chrono>
+#include <iostream>
+#include <stdexcept>
+#include <thread>
+
+#include "common/st_enum_ops.h"
+
 namespace DUTProxy
 {
     using namespace StronglyTypedEnumOps;
+
+    //--------------------------------------------------------------------------
+    // Functions
+    //--------------------------------------------------------------------------
+    const char* toString(eTestResults result)
+    {
+        switch (result)
+        {
+            case eTestResults::AMBIGUOUS:  return "AMBIGUOUS";
+            case eTestResults::FAILED:     return "FAILED";
+            case eTestResults::PASSED:     return "PASSED";
+            default:                       return "UNKNOWN TEST RESULT";
+        }
+    }
+
+    //--------------------------------------------------------------------------
+    const char* toString(eTests test)
+    {
+        switch (test)
+        {
+            case eTests::TEST_INCOMPLETEFEATURE: return "INCOMPLETE";
+            case eTests::TEST_FAILINGFEATURE:    return "FAILING";
+            case eTests::TEST_PASSINGFEATURE:    return "PASSING";
+            case eTests::STOP_TESTING:           return "STOP_TESTING";
+            default:                             return "UNKNOWN TEST";
+        }
+    }
 
     //--------------------------------------------------------------------------
     // DUT Implementation
@@ -34,7 +63,9 @@ namespace DUTProxy
     DUT::DUT(sDUTConfig_t sConfig)
     : runningResult{eTestResults::NONE}, sName{sConfig.sName}
     {
-        std::cout << "Creating new DUT object with name: " << sName << std::endl;
+        std::cout << "Creating new DUT object with name: "
+                  << sName
+                  << std::endl;
     }
 
     //--------------------------------------------------------------------------
@@ -42,11 +73,11 @@ namespace DUTProxy
     {
         // Simulate test execution as result value is the test value, modulo
         // number of valid tests
-        // Use explicit cast here, acknowledging the underlying types and 
+        // Use explicit cast here, acknowledging the underlying types and
         // enum domains are interchangeable due specifically to this simulation
         // implementation
         eTestResults result{
-            enum_cast<eTests, eTestResults>(test) % 
+            enum_cast<eTests, eTestResults>(test) %
                 eTestResults::NUM_POSSIBLE_TEST_RESULTS};
 
         if (eTests::STOP_TESTING == test)
@@ -73,8 +104,8 @@ namespace DUTProxy
                 runningResult |= result;
 
                 // Pass running result through filter to persist failures
-                runningResult = 
-                    (eTestResults::FAILED == 
+                runningResult =
+                    (eTestResults::FAILED ==
                         (eTestResults::FAILED & runningResult)) ?
                     eTestResults::FAILED : (runningResult | result);
             }
@@ -93,7 +124,7 @@ namespace DUTProxy
         if (fd < 0)
         {
             throw std::runtime_error(
-                "Failed to create socket" + 
+                "Failed to create socket" +
                 std::string(std::strerror(errno)));
         }
     }
@@ -154,7 +185,7 @@ namespace DUTProxy
                 fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0)
         {
             throw std::runtime_error(
-                "Failed to set timeout" + 
+                "Failed to set timeout" +
                 std::string(std::strerror(errno)));
         }
     }
@@ -168,10 +199,10 @@ namespace DUTProxy
       sDUTIPAddr(std::move(sConfig.sIPAddr)),
       socket(AF_INET, SOCK_STREAM, 0)
     {
-        std::cout << "Creating new DUTProxyClient for DUT: (" 
-                  << sDUTName 
-                  << ", " 
-                  << sDUTIPAddr 
+        std::cout << "Creating new DUTProxyClient for DUT: ("
+                  << sDUTName
+                  << ", "
+                  << sDUTIPAddr
                   << ")"
                   << std::endl;
 
@@ -192,18 +223,18 @@ namespace DUTProxy
         // Connect to the server using the globally available connect()
         // function
         if (::connect(
-                socket.get(), 
-                reinterpret_cast<sockaddr*>(&serverAddr), 
+                socket.get(),
+                reinterpret_cast<sockaddr*>(&serverAddr),
                 sizeof(serverAddr)) < 0)
         {
             throw std::runtime_error(
-                "Connection failed on: " + 
+                "Connection failed on: " +
                 std::string(std::strerror(errno)));
         }
 
         socket.setReceiveTimeout(5);
-        
-        std::cout << "Connected to server at " 
+
+        std::cout << "Connected to server at "
                     << sDUTIPAddr
                     << ":"
                     << DUT_PROXY_TCP_PORT
@@ -314,7 +345,7 @@ namespace DUTProxy
         {
             sockaddr_in clientAddr{};
             socklen_t clientLen = sizeof(clientAddr);
-            
+
             // Accept incoming connection using globally available function
             int clientSocket =
                 ::accept(
@@ -345,16 +376,21 @@ namespace DUTProxy
             std::cout << "Processing client requests" << std::endl;
             uint16_t rawRequest{0};
             // Receive request using globally available recv()
-            ssize_t bytes = 
+            ssize_t bytes =
                 ::recv(clientSocket.get(), &rawRequest, sizeof(rawRequest), 0);
             if (bytes <= 0)
             {
-                std::cerr << "Unexpected: received no data" << std::endl;
+                std::cout << "Socket Receive: no data" << std::endl;
+                // Assume this condition means the socket has been shut down by
+                // the client and stop processing
                 break;
             }
 
             eTests testToRun = static_cast<eTests>(rawRequest);
+            std::cout << "Running test: " << toString(testToRun) << std::endl;
+
             eTestResults result = dut.execute(testToRun);
+            std::cout << "Result: " << toString(result) << std::endl;
 
             uint16_t rawResult = static_cast<uint16_t>(result);
             // Send using globally available send()
